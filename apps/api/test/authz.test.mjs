@@ -6,13 +6,16 @@ import { createAppServer } from '../src/server.mjs';
 const make = (role, {
   id = 'actor-1',
   state = 'ACTIVE',
+  kind = ({ PAT:'PATIENT', NRS:'CLINICIAN', DOC:'CLINICIAN', PHA:'PHARMACY',
+    CUR:'COURIER', ADM:'INTERNAL', OWN:'INTERNAL', VEN:'VENDOR' })[role],
+  contactVerified = true,
   bindingState = 'ACTIVE',
   credentialState = 'VERIFIED',
-  credentialValidUntil,
+  credentialValidUntil = '2099-01-01T00:00:00Z',
   tenantId,
   mfa = true,
 } = {}) => ({
-  account: { id, state },
+  account: { id, state, kind, contactVerified },
   bindings: [{ role, state: bindingState, credentialState, credentialValidUntil, tenantId }],
   authn: { mfa },
 });
@@ -162,4 +165,18 @@ test('HTTP blocks privileged dashboard without verified MFA', async () => {
     });
     assert.equal(res.status, 403);
   });
+});
+
+
+test('role binding cannot cross account kind and unverified contact cannot book', () => {
+  assert.deepEqual(allowedDashboards(make('DOC', { kind: 'PATIENT' })), []);
+  assert.deepEqual(allowedDashboards(make('PAT', { contactVerified: false })), []);
+  assert.deepEqual(allowedDashboards(make('CUR', { contactVerified: false })), []);
+  assert.equal(authorizeAction(make('ADM'), 'booking.read', {
+    patientAccountId: 'some-other-id', dataClass: 'PHI',
+  }), false);
+  assert.equal(authorizeAction(make('ADM'), 'booking.read', {
+    dataClass: 'OPERATIONS',
+  }), true);
+  assert.deepEqual(allowedDashboards(make('DOC', { credentialValidUntil: null })), []);
 });
