@@ -68,6 +68,7 @@ MADISING adalah sistem operasional untuk **layanan homecare milik sendiri** di S
 | MODEL-A | MADISING adalah usaha penyedia homecare sendiri; bukan marketplace tenaga kesehatan terbuka. |
 | SIX-DASHBOARD-LOCK | Dashboard Pasien, Perawat, Dokter, Apotek, Kurir, Admin/Owner. |
 | ACCOUNT-LOCK | Hanya Pasien dan Kurir dapat mendaftar sendiri; kurir tidak aktif bertugas sebelum diverifikasi Admin; dokter, perawat, apotek dibuat Admin. |
+| ROLE-LOCK | Setiap pengguna hanya dapat memakai resource dan tindakan yang diizinkan untuk peran dan penugasannya; dashboard utama tetap enam. |
 | STAFF-LOCK | Owner menyeleksi; Admin memeriksa dokumen dan mengundang setelah pemeriksaan kompetensi/kredensial serta persetujuan yang berlaku. |
 | SIDRAP-LOCK | Booking divalidasi dari **tujuan kunjungan**, bukan posisi pemesan. Hanya Sidrap dalam pilot. |
 | GOVERNANCE-LOCK | Owner boleh juga menjadi Admin dengan audit konteks terpisah; Patah Pensil beridentitas teknis dan memperoleh sarana maintenance wajib; tidak mendapat akses rutin rekam medis. |
@@ -673,6 +674,107 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 | **V1.4.1 — status booking** | Status `REQUESTED` dan definisi slot belum lengkap | Penamaan `REQUESTED`, `CONFIRMED` dengan kapasitas dicadangkan, `ASSIGNED` atomik, pembayaran tetap OPEN-07 |
 | **V1.4.1 — verifikasi/keputusan terbuka** | UAT-01..30, OPEN-01..12 | UAT-31..33 dan OPEN-13..18 ditambahkan; keputusan R0 tidak diasumsikan selesai |
 | **V1.4.1 — klasifikasi rekam medis** | RME existing sebagai rujukan | Gerbang OPEN-04 memastikan status catatan klinis dan kewajiban RME sebelum skema `clinical_adapter` final |
+
+## 21.1 Pemetaan ketentuan V1.3.6 → V1.4.1
+
+Pemetaan berikut disusun **dari ID dan teks yang benar-benar tercantum** dalam [arsip PRD V1.3.6](reference/MADISING_PRD_V1.3.6_Registrasi_Dashboard_Terkunci.md). Tanda **Dipindahkan** dipakai hanya untuk ketentuan dengan padanan substantif di V1.4.1; **Diubah (CR)** memerlukan persetujuan Owner melalui OPEN-12; **Tetap berlaku dari V1.3.6** berarti persyaratan rinci dalam arsip belum dinyatakan tergantikan atau belum memiliki padanan identik. Kolom lokasi menunjukkan padanan utama atau lokasi detail yang masih dipertahankan, **bukan** klaim bahwa kode sudah mengimplementasikannya.
+
+**Cakupan terhitung:** GOV 7, MAINT 11, ACC 16, ACC-T 18, STAFF-T 14, GOV-T 4 (**70 ID wajib**); ditambah STAFF-01..10 (10 hard gate) dan MAINT-T01..12 (12 skenario maintenance), sehingga **92 ID sumber** dipetakan. Penomoran lama dijaga untuk regression testing. GOV-03 dan GOV-07 menggantikan keputusan terdahulu **hanya setelah disetujui melalui OPEN-12**; ACC-11, ACC-T14, GOV-T03, dan aspek kepemilikan MAINT-11 ikut terdampak perubahan itu.
+
+| ID V1.3.6 | Ringkasan | Lokasi di V1.4.1 | Status |
+|---|---|---|---|
+| `GOV-01` | Owner boleh merangkap Admin dalam satu identitas manusia | §3.2.1; §3.3 | Dipindahkan |
+| `GOV-02` | Vendor mempunyai identitas teknis khusus dan tidak menggunakan akun Admin bersama | §3.2.1; §9.7 | Dipindahkan |
+| `GOV-03` | Vendor boleh bertugas sebagai Admin hanya setelah ditunjuk, dengan akun operasional terpisah | §3.2.1 (GOV-03 CR: Vendor tidak boleh menjadi Admin) | Diubah (CR) |
+| `GOV-04` | Owner/Admin tidak otomatis mendapat izin membuka catatan RME atau file klinis | §3.2.1; §3.3; §12.2 | Dipindahkan |
+| `GOV-05` | Verifikasi klinis dan pengesahan Owner terhadap akun perawat/dokter tetap berlaku (STAFF-LOCK) | §3.2.1; §6.1 | Dipindahkan |
+| `GOV-06` | Perubahan kebijakan hak akses, ekspor data besar, dan akses vendor ke produksi merupakan operasi berisiko tinggi | §3.2.1; §12.4 (detail tambahan tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `GOV-07` | Kepemilikan infrastruktur dan hak administratif tertinggi berada pada entitas pengelola MADISING atau pihak yang sah ditunjuknya | §3.2.1 (GOV-07 CR: kode Vendor, data MADISING); §13.1 | Diubah (CR) |
+| `MAINT-01` | Health monitoring | §9.7 VEN-01, VEN-03 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-02` | Diagnosis error & troubleshooting | §9.7 VEN-02, VEN-11 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-03` | Bug fix & perubahan kode | §13.1; §9.7 VEN-09 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-04` | Pembaruan dan deployment | §9.7 VEN-04, VEN-05; §13.1 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-05` | Backup & pemulihan | §9.7 VEN-06, VEN-07; §12.3 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-06` | Pengujian integrasi eksternal | §9.7 VEN-03, VEN-10 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-07` | Manajemen keamanan teknis | §9.7 VEN-09; §13.1 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-08` | Akses darurat terkendali | §9.7 VEN-08; §3.2.1 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-09` | Kinerja dan kapasitas | §9.7 VEN-01 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-10` | Penanganan insiden dan continuity | §9.7 VEN-11 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-11` | Serah terima & terminasi vendor | §3.2.1 (GOV-07 CR); §9.7 VEN-12 (kewajiban offboarding tetap) | Diubah (CR) |
+| `ACC-01` | Halaman publik hanya menawarkan Daftar sebagai Pasien atau Daftar sebagai Kurir | §6.1; §6.2 | Dipindahkan |
+| `ACC-02` | Signup publik tidak menerima parameter 'role' dari pengguna sebagai sumber kebenaran | §6.2; §12.2 | Dipindahkan |
+| `ACC-03` | Pasien memverifikasi kontak serta menyetujui pemberitahuan privasi sebelum akun aktif | §6.1; §6.3 | Dipindahkan |
+| `ACC-04` | Kurir yang baru signup masuk status PENDING_VERIFICATION, tidak bisa menerima atau melihat order | §6.1; §6.2; §9.5 | Dipindahkan |
+| `ACC-05` | Pembuatan dokter/perawat hanya lewat workflow STAFF-LOCK | §3.2.1; §6.1 | Dipindahkan |
+| `ACC-06` | Pembuatan akun apotek hanya Admin berdasarkan mitra/cabang terverifikasi | §6.1; §12.2 SEC-06 | Dipindahkan |
+| `ACC-07` | Admin mengirim tautan undangan sekali pakai yang kedaluwarsa; pemilik akun mengatur kredensial sendiri | §6.3 | Dipindahkan |
+| `ACC-08` | Login sukses selalu diarahkan backend ke dashboard sesuai peran | §3.1; §6.2; §12.2 | Dipindahkan |
+| `ACC-09` | Otorisasi berlaku pada endpoint, upload/download lampiran, pencarian, ekspor, webhook, dan background job | §3.3; §12.2 SEC-01 | Dipindahkan |
+| `ACC-10` | Owner dapat merangkap Admin, tetapi aktivitas tetap menyimpan konteks hak yang digunakan | §3.2.1 (detail asal tetap di arsip) | Tetap berlaku dari V1.3.6 |
+| `ACC-11` | Vendor menggunakan akun teknis terpisah dari akun Admin operasional (jika ditunjuk) | §3.2.1 (GOV-03 CR: tanpa opsi Vendor sebagai Admin); §9.7 | Diubah (CR) |
+| `ACC-12` | Pengguna yang dinonaktifkan, izin praktik kedaluwarsa, atau kemitraan berakhir kehilangan kemampuan operasional | §6.2; §6.3; §12.2 | Dipindahkan |
+| `ACC-13` | Reset password dan pemulihan akun memerlukan faktor verifikasi yang aman, tanpa pengungkapan apakah akun ada | §6.3 | Dipindahkan |
+| `ACC-14` | Satu pasien bisa didaftarkan oleh keluarga/kuasa hanya melalui relasi perwakilan yang diverifikasi | §9.1 PAT-01; §7.1 | Dipindahkan |
+| `ACC-15` | Wilayah Sidrap membatasi alamat tujuan kunjungan bukan tempat pengguna berada saat registrasi | §5; §17.1 UAT-01, UAT-13 | Dipindahkan |
+| `ACC-16` | Tidak ada pembuatan otomatis akun internal oleh kurir/pasien yang berhasil login | §6.2; §12.2 | Dipindahkan |
+| `ACC-T01` | Signup publik sebagai pasien | —; detail masih pada arsip V1.3.6 §2C.5 | Tetap berlaku dari V1.3.6 |
+| `ACC-T02` | Signup publik sebagai kurir | §17.1 UAT-02 | Dipindahkan |
+| `ACC-T03` | Signup payload 'role=doctor', 'role=nurse', 'role=pharmacy', 'role=admin', 'role=vendor' | §17.1 UAT-03 | Dipindahkan |
+| `ACC-T04` | Dokter/perawat/apotek membuka halaman login | —; detail masih pada arsip V1.3.6 §2C.5 | Tetap berlaku dari V1.3.6 |
+| `ACC-T05` | Admin membuat akun dokter/perawat tanpa verifikasi/approval | —; detail masih pada arsip V1.3.6 §2C.5 | Tetap berlaku dari V1.3.6 |
+| `ACC-T06` | Admin membuat apotek tanpa verifikasi mitra | —; detail masih pada arsip V1.3.6 §2C.5 | Tetap berlaku dari V1.3.6 |
+| `ACC-T07` | Admin menyetujui kurir | —; detail masih pada arsip V1.3.6 §2C.5 | Tetap berlaku dari V1.3.6 |
+| `ACC-T08` | Kurir baru/pending membuka order pengantaran | §17.1 UAT-02 (pembatasan tugas); detail lama tetap | Tetap berlaku dari V1.3.6 |
+| `ACC-T09` | Pasien mencoba endpoint klinis/resep/mitra | §17.1 UAT-05 | Dipindahkan |
+| `ACC-T10` | Kurir X mengakses order Kurir Y | §17.1 UAT-10 | Dipindahkan |
+| `ACC-T11` | Apotek A membuka order Apotek B | §17.1 UAT-09 | Dipindahkan |
+| `ACC-T12` | Owner/Admin membuka foto klinis tanpa dasar izin | §17.1 UAT-07 | Dipindahkan |
+| `ACC-T13` | Vendor login ke Developer Console | §17.1 UAT-06 | Dipindahkan |
+| `ACC-T14` | Vendor ditunjuk Admin | §3.2.1 (GOV-03 CR: Vendor tidak dapat menjadi Admin) | Diubah (CR) |
+| `ACC-T15` | Perawat/dokter dinonaktifkan | §17.1 UAT-26 | Dipindahkan |
+| `ACC-T16` | Pasien mendaftar dari luar Sidrap tetapi booking alamat Sidrap | §17.1 UAT-01 | Dipindahkan |
+| `ACC-T17` | Pasien dari Sidrap booking tujuan luar Sidrap | §17.1 UAT-13 | Dipindahkan |
+| `ACC-T18` | Owner/Admin satu identitas menyetujui tindakan yang mewajibkan reviewer independen | —; detail masih pada arsip V1.3.6 §2C.5 | Tetap berlaku dari V1.3.6 |
+| `STAFF-01` | Endpoint registrasi publik tidak boleh membuat akun role 'DOC' atau 'NRS', termasuk lewat perubahan payload/API | §6.1; §6.2 | Dipindahkan |
+| `STAFF-02` | Hanya admin SDM berizin yang dapat *provision* akun dan hanya jika 'document_verified=true', 'clinical_approved=true', 'owner_approved=true' dan prasyarat lokal terpenuhi | —; detail masih pada arsip V1.3.6 §2B.4 | Tetap berlaku dari V1.3.6 |
+| `STAFF-03` | Owner tidak memperoleh akses baca rekam medis hanya karena mengesahkan perekrutan | §3.2.1; §12.2 SEC-08 | Dipindahkan |
+| `STAFF-04` | Kredensial dan SIP terkait fasilitas/jenis praktik/daerah; tidak lolos dispatch bila tidak cocok atau tidak berlaku | §7.2; §12.2 SEC-04 (detail lama tetap) | Tetap berlaku dari V1.3.6 |
+| `STAFF-05` | Tugas medis/keperawatan dievaluasi berdasarkan 'clinical_privileges', bukan label generik “perawat” | §7.2; §9.2 NRS-05 (detail lama tetap) | Tetap berlaku dari V1.3.6 |
+| `STAFF-06` | Akun *unique-per-person*, bukan akun bersama; MFA klinisi, kode undangan sekali pakai, pembatalan sesi saat dinonaktifkan | §6.3 (detail lama tetap) | Tetap berlaku dari V1.3.6 |
+| `STAFF-07` | Surat/ijazah/nomor SIP dan STR adalah dokumen sensitif personel; akses least-privilege, audit akses/unduh, penyimpanan privat terenkripsi, masa retensi sesuai kebijakan hukum | —; detail masih pada arsip V1.3.6 §2B.4 | Tetap berlaku dari V1.3.6 |
+| `STAFF-08` | Perubahan peran/perizinan, expiry SIP dan revokasi hak klinis harus memicu peninjauan tugas aktif serta pemberitahuan ke pihak penanggung jawab | —; detail masih pada arsip V1.3.6 §2B.4 | Tetap berlaku dari V1.3.6 |
+| `STAFF-09` | Dashboard perawat dan dokter tidak menampilkan tombol daftar akun; hanya masuk/aktivasi undangan. Role switch pada HTML prototipe merupakan alat simulasi UI, bukan autentikasi nyata | §6.1; §14 (detail lama tetap) | Tetap berlaku dari V1.3.6 |
+| `STAFF-10` | Akun masih 'INVITED' tidak dapat menerima pasien, memberi instruksi, atau menandatangani resep | —; detail masih pada arsip V1.3.6 §2B.4 | Tetap berlaku dari V1.3.6 |
+| `STAFF-T01` | Publik mencoba signup dokter atau perawat | §17.1 UAT-03 | Dipindahkan |
+| `STAFF-T02` | Admin mencoba langsung aktifkan kandidat belum diverifikasi | —; detail masih pada arsip V1.3.6 §2B.6 | Tetap berlaku dari V1.3.6 |
+| `STAFF-T03` | Dokumen STR/SIP ada tetapi belum diperiksa sumbernya | —; detail masih pada arsip V1.3.6 §2B.6 | Tetap berlaku dari V1.3.6 |
+| `STAFF-T04` | Kandidat tanpa SIP sesuai konteks praktik | —; detail masih pada arsip V1.3.6 §2B.6 | Tetap berlaku dari V1.3.6 |
+| `STAFF-T05` | Kompetensi perawatan luka tanpa privilege tindakan lain | —; detail masih pada arsip V1.3.6 §2B.6 | Tetap berlaku dari V1.3.6 |
+| `STAFF-T06` | Admin mencoba mengesahkan keputusan Owner | —; detail masih pada arsip V1.3.6 §2B.6 | Tetap berlaku dari V1.3.6 |
+| `STAFF-T07` | Owner menyetujui tanpa review klinis | —; detail masih pada arsip V1.3.6 §2B.6 | Tetap berlaku dari V1.3.6 |
+| `STAFF-T08` | Semua syarat lolos dan Admin mengundang | §6.2; §6.3 (detail lama tetap) | Tetap berlaku dari V1.3.6 |
+| `STAFF-T09` | Undangan dipakai berulang atau kedaluwarsa | —; detail masih pada arsip V1.3.6 §2B.6 | Tetap berlaku dari V1.3.6 |
+| `STAFF-T10` | SIP kedaluwarsa setelah akun aktif | §17.1 UAT-12 | Dipindahkan |
+| `STAFF-T11` | Perawat berstatus suspended mencoba check-in | —; detail masih pada arsip V1.3.6 §2B.6 | Tetap berlaku dari V1.3.6 |
+| `STAFF-T12` | Dokter di luar relasi perawatan membuka rekam medis | §17.1 UAT-08 | Dipindahkan |
+| `STAFF-T13` | Wilayah booking di luar Sidrap | §17.1 UAT-13 | Dipindahkan |
+| `STAFF-T14` | Perpindahan peran via manipulasi UI | §17.1 UAT-04, UAT-05 (detail lama tetap) | Tetap berlaku dari V1.3.6 |
+| `GOV-T01` | Owner sekaligus admin masuk dan menjalankan dua konteks | §3.2.1 (uji konteks lama tetap berlaku) | Tetap berlaku dari V1.3.6 |
+| `GOV-T02` | Vendor teknis mencoba membuka profil/diagnosis/foto pasien melalui API langsung | §17.1 UAT-06 | Dipindahkan |
+| `GOV-T03` | Vendor dengan akun teknis mencoba membuat akun perawat | §3.2.1 (GOV-03 CR: Vendor tidak memiliki jalur Admin) | Diubah (CR) |
+| `GOV-T04` | Owner/Admin mencoba meloloskan kandidat tanpa validasi klinis independen | §3.2.1 (uji kelayakan klinis tetap berlaku) | Tetap berlaku dari V1.3.6 |
+| `MAINT-T01` | Sistem API gagal / antrean webhook berhenti | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
+| `MAINT-T02` | Error log mengandung data klinis dan token uji | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
+| `MAINT-T03` | Vendor meminta akses privileged produksi | §17.1 UAT-31; §9.7 VEN-08 (rincian lama tetap) | Tetap berlaku dari V1.3.6 |
+| `MAINT-T04` | Vendor mencoba deploy perubahan kritis tanpa persetujuan | §17.1 UAT-31 | Dipindahkan |
+| `MAINT-T05` | Pengelola menyetujui release yang lulus uji | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
+| `MAINT-T06` | Simulasi backup gagal | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
+| `MAINT-T07` | Uji restore pada lingkungan terisolasi | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
+| `MAINT-T08` | Vendor meminta restore produksi tanpa approval terpisah | §17.1 UAT-31 | Dipindahkan |
+| `MAINT-T09` | Vendor mencoba menghapus audit aktivitasnya sendiri | §12.4 (rincian lama tetap berlaku) | Tetap berlaku dari V1.3.6 |
+| `MAINT-T10` | Owner mencabut akses vendor saat kontrak selesai | §9.7 VEN-12 (rincian lama tetap berlaku) | Tetap berlaku dari V1.3.6 |
+| `MAINT-T11` | Hotfix darurat terjadi ketika otorisator tidak tersedia | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
+| `MAINT-T12` | Pemeliharaan connector apotek/kurir/RME | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
 
 # 22. Persetujuan dan pengendalian versi
 
