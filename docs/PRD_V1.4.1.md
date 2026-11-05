@@ -1,5 +1,5 @@
 # MADISING
-## PRODUCT REQUIREMENTS DOCUMENT (PRD) — V1.4.0
+## PRODUCT REQUIREMENTS DOCUMENT (PRD) — V1.4.1
 ### Restrukturisasi produk, layanan, keamanan, dan implementasi bertahap berdasarkan prototipe V1.3.7
 
 | Atribut | Ketentuan |
@@ -7,7 +7,7 @@
 | Nama produk | **MADISING** |
 | Pemilik/penyelenggara | Usaha layanan homecare model A: satu penyelenggara layanan dengan tenaga dan mitra terverifikasi |
 | Vendor pengembang dan pemelihara | **Patah Pensil** (dijalankan oleh pemilik proyek; akses teknis tetap terpisah dari akses klinis/operasional) |
-| Dokumen | PRD V1.4.0 — rancang implementasi, **untuk tinjauan dan persetujuan** |
+| Dokumen | PRD V1.4.1 — rancang implementasi, **untuk tinjauan dan persetujuan** |
 | Tanggal | 6 November 2026 |
 | Referensi pengalaman pengguna | `MADISING_UIUX_Prototype_V1.3.7_Katalog_9_Layanan_Sidrap.html` |
 | Baseline persyaratan terkunci | PRD V1.3.6: SIDRAP-LOCK, STAFF-LOCK, ACCOUNT-LOCK, ROLE-LOCK, GOVERNANCE-LOCK, IDENTITY-LOCK |

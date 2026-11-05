@@ -1,7 +1,7 @@
 # MADISING — Implementasi awal AuthN/AuthZ (R0 → R1)
 
 Status: **implementasi baseline, belum siap pasien nyata**.
-Referensi produk: [PRD V1.4.0](PRD_V1.4.0.md) dan prototipe V1.3.7.
+Referensi produk: [PRD V1.4.1](PRD_V1.4.1.md) dan prototipe V1.3.7.
 
 ## Identity boundary / prinsip keamanan
 

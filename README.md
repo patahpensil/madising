@@ -33,6 +33,6 @@ Feature branch → pull request → automated checks → review → approved mer
 
 ## Product specification
 
-The **proposed master PRD V1.4.0** is available at [docs/PRD_V1.4.0.md](docs/PRD_V1.4.0.md), restructured from the [V1.3.7 interactive prototype](docs/reference/MADISING_UIUX_Prototype_V1.3.7.html) and its [service catalogue addendum](docs/reference/MADISING_Addendum_Katalog_Layanan_V1.3.7.md). **Pending owner/clinical/security approval**, the V1.3.6 locked requirements remain binding; see [docs/DECISIONS.md](docs/DECISIONS.md).
+The **proposed master PRD V1.4.1** is available at [docs/PRD_V1.4.1.md](docs/PRD_V1.4.1.md), restructured from the [V1.3.7 interactive prototype](docs/reference/MADISING_UIUX_Prototype_V1.3.7.html) and its [service catalogue addendum](docs/reference/MADISING_Addendum_Katalog_Layanan_V1.3.7.md). **Pending owner/clinical/security approval**, the V1.3.6 locked requirements remain binding; see [docs/DECISIONS.md](docs/DECISIONS.md).
 
 See [architecture](docs/ARCHITECTURE.md), [security](docs/SECURITY.md), and [roadmap](docs/ROADMAP.md).
