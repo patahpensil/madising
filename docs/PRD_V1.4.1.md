@@ -371,6 +371,8 @@ Sistem menerapkan transactional outbox atau mekanisme andal setara, retry berbat
 - Backup dan retention mengikuti klasifikasi data, ketentuan hukum dan persetujuan penanggung jawab klinis; **tidak menetapkan durasi arbitrer di PRD ini**.
 - Data pengembangan, demo dan pengujian menggunakan data sintetis; dilarang menyalin data produksi ke staging/CI.
 
+**Gerbang klasifikasi data klinis:** Bila **OPEN-04** menunjukkan RME existing tidak menyediakan API atau prosedur integrasi yang sah, catatan klinis MADISING berpotensi menjadi bagian rekam medis. Kewajiban rekam medis elektronik harus ditelaah Owner sebagai PJ Klinis bersama legal sebelum skema `clinical_adapter` difinalkan. **OPEN-04 harus terjawab pada R0**, bukan ditunda sampai data klinis diproses.
+
 # 11. Arsitektur teknis hemat kompleksitas
 
 ## 11.1 Komponen target
@@ -411,6 +413,8 @@ Flutter dapat membangun Android/iOS dari satu codebase, tetapi artefak iOS tetap
 - RME existing adalah sistem pencatatan resmi; integrasi harus mendukung identitas pasien, encounter, catatan tindakan, resep yang sah, dan hasil sinkronisasi sesuai cakupan API vendor RME.
 - Catatan harus memiliki status antrean/outbox dan reconciliation. Jika API tidak tersedia, gunakan prosedur perantara aman, terotorisasi dan dibuktikan; jangan mengirim informasi klinis melalui grup chat biasa.
 - Integrasi SATUSEHAT mengikuti tanggung jawab dan identitas fasilitas yang sebenarnya serta dokumentasi use case FHIR yang relevan; **tidak** mengklaim koneksi SATUSEHAT sebelum credential, sandbox, mapping dan hasil uji tersedia.
+
+**Gerbang klasifikasi data klinis (rujuk §10.2):** keputusan **OPEN-04** wajib ditutup saat R0. Jika tidak ada API/prosedur bridging RME yang sah, status catatan klinis MADISING sebagai kemungkinan rekam medis dan kewajiban terkait harus diputuskan Owner/PJ Klinis bersama legal sebelum desain `clinical_adapter` dilanjutkan.
 
 # 12. Keamanan aplikasi: kebutuhan yang tidak boleh dipotong
 
@@ -461,7 +465,7 @@ Flutter dapat membangun Android/iOS dari satu codebase, tetapi artefak iOS tetap
 - Alur perubahan: issue → feature branch → Pull Request → CI + review → staging → UAT → persetujuan rilis → deployment produksi.
 - CI: formatting, lint, typecheck, unit test, integration tests, Flutter analyze/test, security/dependency/secret scanning, dan kontrol policy yang bisa diotomasi. Workflow tidak boleh mendistribusikan secrets pada PR yang tidak dipercaya.
 - CD: staging otomatis hanya dengan synthetic data; produksi menggunakan environment approval, protected secrets/OIDC, deploy idempotent, smoke test, rollback, release tag.
-- Patah Pensil bertindak sebagai vendor, namun rilis kritis dan restore tetap membutuhkan persetujuan yang dapat ditelusuri sesuai matriks kewenangan.
+- Rilis kritis, restore, dan akses istimewa diajukan Vendor Patah Pensil serta **disetujui Owner** sesuai §3.2.1; Vendor tidak dapat menyetujui permintaannya sendiri. Rotasi kredensial produksi mengikuti mekanisme persetujuan yang sama.
 - Pemeliharaan minimal: monitoring, patch dependency, pembaruan platform Android/iOS, pencadangan, pengujian pemulihan, rotasi token, peninjauan akses mitra, analisis insiden, dan dokumentasi release.
 
 ## 13.2 Kriteria DoD (Definition of Done)
@@ -509,6 +513,8 @@ Agen AI membantu menulis kode, tes, dokumentasi, dan review awal, tetapi **tidak
 
 Hasil: PRD disahkan; pemetaan izin, skema data, threat model, desain arsitektur; prototipe dan katalog; repo private + CI; web/API/Flutter kerangka; data sintetis. **Tidak boleh** menerima data pasien nyata.
 
+**Gerbang keluar R0:** OPEN-04 (RME), OPEN-13 (stack), OPEN-15 (offline perawat), OPEN-16 (kanal kurir), OPEN-17 (kesesuaian scope dan pengujian), dan OPEN-18 (PJ data/privasi serta evaluasi kewajiban PDP) **harus diputuskan dan didokumentasikan** sebelum keluar dari R0; ketidaksiapan salah satu memblokir transisi ke R1, bukan dianggap otomatis telah selesai.
+
 ## R1 — Core Homecare pilot (kelayakan produksi terbatas)
 
 - Pendaftaran pasien dan kurir, provisioning internal, MFA, audit, penetapan consent/kuasa.
@@ -540,7 +546,7 @@ Aktivasi bertahap fisio, terapi, ibu-bayi, lab, caregiver serta workflow profesi
 | UAT-04 | Login keenam role | Tiap role masuk dashboard berbeda dan memiliki data sesuai scope |
 | UAT-05 | Pasien memanggil endpoint dokter/Admin | Ditolak dan log audit sesuai kebijakan |
 | UAT-06 | Vendor melihat profil/foto klinis via API/file/log | Ditolak; log teredaksi |
-| UAT-07 | Owner membuka diagnosis tanpa relasi sah | Ditolak walau Owner merangkap Admin |
+| UAT-07 | Owner melalui konteks `OWN/ADM` membuka diagnosis | Ditolak walau Owner adalah dokter; akses klinis hanya melalui akun `DOC` dengan relasi perawatan sah. |
 | UAT-08 | Dokter membuka pasien di luar encounter/clinical relationship | Ditolak atau mengikuti prosedur break-glass sah, bukan akses default |
 | UAT-09 | Apotek A mencoba membuka order Apotek B | Ditolak |
 | UAT-10 | Kurir X membuka order Kurir Y/foto klinis | Ditolak |
@@ -564,6 +570,9 @@ Aktivasi bertahap fisio, terapi, ibu-bayi, lab, caregiver serta workflow profesi
 | UAT-28 | Push perubahan ke branch atau deploy produksi tanpa approval | Workflow sesuai perlindungan branch/environment memblokir operasi |
 | UAT-29 | Log, push dan CI mengandung input mirip PHI/OTP/token | Masking/redaction dan secret scan bekerja; tidak bocor ke penerima tak sah |
 | UAT-30 | Katalog 9 layanan di HP dan PC | Semua tampil sesuai desain; hanya ACTIVE dapat booking; copy tidak menipu pengguna |
+| UAT-31 | Vendor menyetujui sendiri deployment, restore atau akses JIT | Ditolak; tindakan teknis memerlukan persetujuan Owner dan audit, Vendor tidak bisa self-approve. |
+| UAT-32 | Admin tanpa scope `CCO` menetapkan kelayakan klinis, atau mengaktifkan layanan tanpa sign-off Owner | Ditolak; eligibility klinis memerlukan scope `CCO`, aktivasi katalog memerlukan persetujuan Owner sebagai PJ Klinis. |
+| UAT-33 | Admin membuka diagnosis/foto klinis di luar scope `CCO` | Ditolak dan diaudit; izin operasional tidak mengizinkan akses PHI bebas. |
 
 ## 17.2 UAT spesifik sembilan layanan
 
@@ -615,12 +624,13 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 | Overpromising layanan belum tersedia | Tinggi | Flag `ACTIVE`, review, pengaturan kapasitas & copy jujur | Admin + PJ klinis |
 | Kegagalan deployment | Tinggi | PR, CI, staging, approval, rollback | Patah Pensil |
 | Fitur banyak di luar kesiapan operasional | Sedang/Tinggi | Release gates, modular monolith, scope per layanan | Owner |
+| Owner merangkap PJ Klinis dan dokter praktik | Sedang | Akun terpisah, audit akses per konteks | Owner + Vendor |
 
 # 20. Dependensi dan keputusan terbuka untuk sign-off
 
 | ID | Keputusan yang masih dibutuhkan | Penanggung jawab |
 |---|---|---|
-| OPEN-01 | Identitas resmi fasilitas/pemberi layanan, cakupan izin dan PJ klinis | Owner + Dokter PJ |
+| OPEN-01 | PJ Klinis telah ditetapkan: Owner (dokter). Identitas resmi fasilitas/pemberi layanan, cakupan izin per layanan serta PJ RME tetap terbuka. | Owner (PJ Klinis) |
 | OPEN-02 | Daftar layanan yang **benar-benar aktif** pertama kali dan SOP masing-masing | Owner + Dokter PJ |
 | OPEN-03 | Daftar tenaga, profesi tambahan, bukti kewenangan dan lokasi kerja | Owner/Admin + PJ klinis |
 | OPEN-04 | Vendor/kontrak API RME, sandbox, mapping nomor pasien/kunjungan | RME owner + Patah Pensil |
@@ -631,11 +641,17 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 | OPEN-09 | Penyedia hosting, lokasi pemrosesan dan strategi pemulihan | Owner + Patah Pensil |
 | OPEN-10 | Ketersediaan perangkat pengujian iOS dan publikasi Android/iOS | Patah Pensil |
 | OPEN-11 | Parameter SLO/RPO/RTO serta kapasitas layanan | Owner + PJ klinis + Patah Pensil |
-| OPEN-12 | Persetujuan master PRD dan kedudukan dokumen ini sebagai pengganti V1.3.6 | Owner |
+| OPEN-12 | Persetujuan master PRD dan kedudukan dokumen ini sebagai pengganti V1.3.6 | Owner (juga dalam kapasitas Dokter PJ Klinis) |
+| OPEN-13 | Stack backend/web: NestJS + Next.js vs Node tanpa framework; baseline `.mjs` saat ini akan di-port atau dipertahankan | Vendor + Owner |
+| OPEN-14 | Model akses profesi nonperawat dalam batas enam dashboard, tanpa mengasumsikan role `NRS` | Owner (PJ Klinis) |
+| OPEN-15 | Dokumentasi perawat offline (NRS-08), mempertimbangkan konektivitas kecamatan pinggiran | Owner + Vendor |
+| OPEN-16 | Kanal kurir: PWA vs Flutter; termasuk keterbatasan lokasi latar belakang PWA di iOS | Vendor |
+| OPEN-17 | Kesesuaian lingkup R1 (layanan aktif, Android/iOS, pentest, DPIA) dengan plafon anggaran | Owner + Vendor |
+| OPEN-18 | Penetapan penanggung jawab data/privasi dan evaluasi kebutuhan Pejabat PDP; pengendali = penyelenggara MADISING, pemroses = Patah Pensil (perlu pengesahan legal dan kontrak); Vendor tidak merangkap PJ privasi | Owner + legal |
 
 # 21. Change log dan traceability
 
-| Aspek | Baseline | PRD V1.4.0 |
+| Aspek | Baseline | PRD V1.4.1 |
 |---|---|---|
 | Identitas produk | MADISING V1.3.4+ | Dipertahankan |
 | Enam dashboard | V1.3.6 | Dipertahankan, dengan spesifikasi akses dan acceptance tests terkonsolidasi |
@@ -648,6 +664,13 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 | Keamanan | Kontrol dasar dan governance | Threat model, ASVS/MASVS, negative tests, DPIA, data minimization, go-live gates diperjelas |
 | Rilis | Alur MVP dan mitra | Bertahap R0–R3; seluruh kategori terlihat, aktivasi sesuai kemampuan yang sah |
 | Dokumen biaya | Rencana terpisah | Tidak ada nominal biaya di PRD |
+| **V1.4.1 — pemisahan pihak** | Interpretasi lama Owner/Admin/Vendor | Owner dokter sekaligus PJ Klinis, satu Admin tenaga medis yang ditunjuk, Vendor Patah Pensil eksternal; pemisahan akun dan audit |
+| **V1.4.1 — persetujuan teknis** | Tata kelola Vendor | Deployment produksi, restore, JIT dan rotasi kredensial produksi memerlukan approval Owner; Vendor tidak boleh self-approve |
+| **V1.4.1 — kewenangan CCO** | Review administratif/klinis belum dipisah rinci | Admin hanya menilai klinis awal dengan scope `CCO` dari Owner; tanpa akses PHI bebas |
+| **V1.4.1 — aktivasi katalog** | Sign-off klinis generik | Transisi `VERIFIED/ACTIVE` harus ditandatangani Owner sebagai PJ Klinis |
+| **V1.4.1 — status booking** | Status `REQUESTED` dan definisi slot belum lengkap | Penamaan `REQUESTED`, `CONFIRMED` dengan kapasitas dicadangkan, `ASSIGNED` atomik, pembayaran tetap OPEN-07 |
+| **V1.4.1 — verifikasi/keputusan terbuka** | UAT-01..30, OPEN-01..12 | UAT-31..33 dan OPEN-13..18 ditambahkan; keputusan R0 tidak diasumsikan selesai |
+| **V1.4.1 — klasifikasi rekam medis** | RME existing sebagai rujukan | Gerbang OPEN-04 memastikan status catatan klinis dan kewajiban RME sebelum skema `clinical_adapter` final |
 
 # 22. Persetujuan dan pengendalian versi
 
@@ -655,10 +678,11 @@ Dokumen ini adalah **draft pengganti terstruktur** untuk PRD V1.3.6 berdasarkan 
 
 Tanda persetujuan yang dibutuhkan:
 
-- **Owner MADISING:** ruang lingkup produk, prioritas layanan, alur operasional, dan penetapan vendor Patah Pensil.
-- **Dokter penanggung jawab klinis:** SOP, eligibility, triase, instruksi, rujukan, dokumentasi dan ruang lingkup layanan.
-- **Penanggung jawab data/privasi:** kepatuhan pengolahan data, kontrol akses, integrasi, retensi, kontrak pemrosesan dan DPIA.
-- **Vendor Patah Pensil:** kelayakan teknis, implementasi, pengujian, operasi, backup, dan CI/CD.
+- **Owner MADISING (dokter) — juga dalam kapasitas Dokter PJ Klinis:** ruang lingkup produk, prioritas layanan, SOP, eligibility, triase, instruksi, rujukan, dokumentasi, aktivasi katalog dan penetapan Vendor Patah Pensil.
+- **Penanggung jawab data/privasi — belum ditetapkan (OPEN-18):** kepatuhan pengolahan data, kontrol akses, integrasi, retensi, kontrak pemrosesan dan DPIA; persetujuan dilakukan setelah penetapannya sah.
+- **Vendor Patah Pensil — kelayakan teknis:** implementasi, pengujian, operasi, backup, dan CI/CD; bukan penanda tangan klinis ataupun wakil Owner.
+
+Admin operasional bukan penanda tangan PRD; fungsi Admin dijalankan berdasarkan penunjukan dan batas kewenangan Owner.
 
 # 23. Referensi normatif dan sumber teknis
 
