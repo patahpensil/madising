@@ -5,8 +5,8 @@
 | Atribut | Ketentuan |
 |---|---|
 | Nama produk | **MADISING** |
-| Pemilik/penyelenggara | Usaha layanan homecare model A: satu penyelenggara layanan dengan tenaga dan mitra terverifikasi |
-| Vendor pengembang dan pemelihara | **Patah Pensil** (dijalankan oleh pemilik proyek; akses teknis tetap terpisah dari akses klinis/operasional) |
+| Pemilik/penyelenggara | Owner MADISING adalah dokter yang sekaligus Dokter Penanggung Jawab Klinis homecare. Operasional aplikasi harian dijalankan oleh satu akun Admin yang dipegang tenaga medis yang ditunjuk Owner. |
+| Vendor pengembang dan pemelihara | **Patah Pensil** (vendor eksternal pembuat dan pemelihara aplikasi; bukan pemilik MADISING, bukan Admin, bukan pemberi layanan kesehatan; akses teknis terpisah dari akses klinis/operasional) |
 | Dokumen | PRD V1.4.1 — rancang implementasi, **untuk tinjauan dan persetujuan** |
 | Tanggal | 6 November 2026 |
 | Referensi pengalaman pengguna | `MADISING_UIUX_Prototype_V1.3.7_Katalog_9_Layanan_Sidrap.html` |
@@ -75,13 +75,17 @@ MADISING adalah sistem operasional untuk **layanan homecare milik sendiri** di S
 | SERVICE-CATALOG-LOCK | Kesembilan kategori V1.3.7 tercantum; ketersediaan aktual tetap berdasarkan persetujuan aktivasi layanan. |
 | PROTOTYPE-LOCK | Visual utama dan struktur pengalaman V1.3.7 menjadi referensi desain; prototipe bukan bukti keamanan produksi. |
 
+**Klarifikasi tata kelola V1.4.1 (change request atas interpretasi GOVERNANCE-LOCK; isi tabel LOCK di atas tetap dipertahankan):** Owner, Admin, dan Vendor adalah tiga pihak berbeda. Owner dapat tetap memegang konteks ADM sesuai ketentuan ini, tetapi operasional harian dijalankan Admin yang ditunjuk. Klarifikasi ini memerlukan persetujuan Owner dalam kapasitas Owner dan Dokter PJ Klinis melalui OPEN-12.
+
 Setiap perubahan terhadap ketentuan terkunci memerlukan change request, dampak keamanan/klinis, persetujuan pemilik, dan persetujuan penanggung jawab klinis untuk area medis.
 
 ## 2.2 Fakta yang dilaporkan pemilik vs hal yang belum diverifikasi
 
-**Dilaporkan telah tersedia oleh pemilik:** fasilitas/klinik, dokter, perawat, RME, apotek mitra, kurir mitra, serta tata kelola legal oleh dokter penanggung jawab. Status dokumen, cakupan izin per kategori layanan, konektivitas RME, kesiapan apotek dan kurir **belum divalidasi dalam PRD ini**.
+**Dikonfirmasi pemilik (6 November 2026):** Owner MADISING adalah dokter sekaligus Dokter Penanggung Jawab Klinis homecare; satu akun Admin operasional harian dipegang tenaga medis yang ditunjuk Owner; Vendor Patah Pensil adalah pihak eksternal terpisah, bukan Owner, Admin, atau pemberi layanan kesehatan.
 
-**Belum final dan harus diputuskan sebelum aktivasi terkait:** identitas fasilitas serta penanggung jawab RME; daftar tenaga dan izin per tindakan; kontrak/persetujuan pemrosesan data; API atau prosedur kerja aman dengan RME, apotek, kurir dan laboratorium; batas retensi; metode pembayaran/refund; geofence administratif resmi; parameter RPO/RTO dan tingkat layanan respons; ketentuan konsultasi jarak jauh; kebijakan perwakilan pasien anak/lansia dan pembuktian kewenangan kuasa.
+**Dilaporkan telah tersedia oleh pemilik:** fasilitas/klinik, dokter, perawat, RME, apotek mitra dan kurir mitra. Status dokumen dan identitas fasilitas, cakupan izin per kategori layanan, PJ RME, konektivitas RME, kesiapan apotek dan kurir **belum divalidasi dalam PRD ini**.
+
+**Belum final dan harus diputuskan sebelum aktivasi terkait:** identitas fasilitas, izin per layanan, dan penanggung jawab RME; daftar tenaga dan izin per tindakan; kontrak/persetujuan pemrosesan data; API atau prosedur kerja aman dengan RME, apotek, kurir dan laboratorium; batas retensi; metode pembayaran/refund; geofence administratif resmi; parameter RPO/RTO dan tingkat layanan respons; ketentuan konsultasi jarak jauh; kebijakan perwakilan pasien anak/lansia dan pembuktian kewenangan kuasa.
 
 # 3. Persona, kanal, dan batas kewenangan
 
@@ -96,13 +100,19 @@ Setiap perubahan terhadap ketentuan terkunci memerlukan change request, dampak k
 | **DB-CUR — Kurir** | Mobile/PWA; Flutter dapat berbagi komponen jika dipilih | Tugas antar, pickup, navigasi, serah-terima, gagal/retur | Diagnosis, foto medis, rincian resep/riwayat, order kurir lain |
 | **DB-ADM — Admin/Owner** | Web desktop responsif | Ringkasan, booking, verifikasi, dispatch, SDM, mitra, katalog, keuangan, audit operasional | Melihat/mengubah rekam medis rinci tanpa dasar kewenangan klinis |
 
-Peran pendukung CCO (koordinator klinis) dan FIN (keuangan) adalah **scope izin** di workspace terkait, bukan dashboard tambahan. Profesi fisioterapis, bidan, terapis, petugas laboratorium, dan pramurukti hanya diberi akses yang layak setelah desain lingkup profesinya disahkan; pada pilot tidak boleh memperoleh hak perawat/dokter hanya untuk mempersingkat implementasi.
+Peran pendukung CCO (koordinator klinis) dan FIN (keuangan) adalah **scope izin** di workspace terkait, bukan dashboard tambahan. Profesi fisioterapis, bidan, terapis, petugas laboratorium, dan pramurukti **belum memiliki dashboard sendiri** dan tidak boleh memperoleh hak perawat/dokter hanya untuk mempersingkat implementasi. Desain aksesnya merupakan **OPEN-14** dan harus mematuhi SIX-DASHBOARD-LOCK. **Opsi untuk dinilai (belum diputuskan):** workspace lapangan di dashboard yang sudah ada, dengan kode role profesi terpisah, bukan `NRS`, serta pembatasan izin berdasarkan profesi dan penugasan.
 
 ## 3.2 Developer Console — Patah Pensil
 
 Konsol teknis **di luar** keenam dashboard. Wajib mengelola status sistem, deployment, job/integrasi, backup, troubleshooting, notifikasi insiden, aktivitas audit teknis, dan pencabutan akses. Konsol **tidak** mengungkap rekam medis, foto, diagnosis, resep, nomor identitas pasien, atau token produksi pada penggunaan rutin.
 
-Jika satu orang yang sama adalah Owner dan vendor Patah Pensil, kredensial, konteks sesi, izin, serta audit tetap terpisah. Aksi sensitif yang membutuhkan persetujuan independen tidak dianggap sah hanya karena orang yang sama berpindah role.
+### 3.2.1 Pemisahan kewenangan Owner–Admin–Vendor
+
+- **Owner MADISING (dokter sekaligus PJ Klinis):** satu akun `INTERNAL` untuk `OWN` (dan konteks `ADM` bila dipakai) serta satu akun `CLINICIAN` terpisah untuk `DOC`, masing-masing memakai kredensial, MFA dan audit sendiri. Akses PHI oleh Owner hanya melalui akun/konteks `DOC` dengan relasi perawatan yang sah, **tidak pernah** lewat `OWN/ADM`. Kehadiran konteks `OWN` tidak membenarkan akses klinis otomatis.
+- **Admin operasional:** satu akun `INTERNAL` dengan role `ADM`, MFA wajib dan tidak mempunyai akses PHI bebas. Karena pemegang akun Admin adalah tenaga medis, Owner **dapat** memberikan scope `CCO` untuk penilaian kelayakan klinis awal di `ADMIN_REVIEW`; pemberian scope tercatat, dapat dicabut dan diaudit. Scope `CCO` tidak otomatis aktif dan bukan kewenangan diagnosis, instruksi atau resep dokter.
+- **Vendor Patah Pensil:** akun terpisah berjenis `VENDOR` dengan role `VEN`, tanpa akses PHI default, tanpa role `ADM/OWN`, dan bukan pemberi layanan kesehatan.
+- **Persetujuan operasi teknis:** rilis produksi, restore backup, akses istimewa JIT Vendor dan rotasi kredensial produksi diajukan/dieksekusi Vendor **setelah disetujui Owner**; Vendor dilarang menyetujui permintaannya sendiri. Kebutuhan persetujuan dan jejak audit berlaku meskipun maintenance dioperasikan Patah Pensil.
+- **Aktivasi staf — STAFF-LOCK:** Owner menyeleksi dan menyetujui tenaga/staf; Admin memeriksa dokumen/kredensial dan mengirim undangan sesuai persetujuan serta pemeriksaan kewenangan yang berlaku. Aktivasi tidak boleh mendahului persetujuan Owner dan syarat klinis yang relevan.
 
 ## 3.3 Matriks akses minimum (ringkasan)
 
