@@ -154,7 +154,7 @@ Rincian izin per endpoint diterbitkan sebagai lampiran `AUTHZ_MATRIX` sebelum im
 
 Setiap layanan memiliki `service_id`, judul, penjelasan, kategori risiko, profesi/kompetensi yang dibutuhkan, prosedur SOP terkait, instruksi dokter bila dibutuhkan, jenis consent, area/jadwal, harga/paket (jika disetujui), durasi referensi, syarat previsit, kriteria pengecualian, dan penanggung jawab persetujuan.
 
-State katalog: `DRAFT → VERIFIED → ACTIVE ↔ SUSPENDED → RETIRED`. Hanya `ACTIVE` boleh menghasilkan booking terkonfirmasi. `VERIFIED` mensyaratkan sign-off klinis, kesiapan personel dan tata kelola terkait; perubahan ketersediaan petugas tidak otomatis mengubah legalitas layanan. Layanan `DRAFT/SUSPENDED` dapat ditampilkan sebagai “Belum tersedia” jika sesuai kebijakan, tetapi **tanpa tombol booking aktif**.
+State katalog: `DRAFT → VERIFIED → ACTIVE ↔ SUSPENDED → RETIRED`. Hanya `ACTIVE` boleh menghasilkan booking terkonfirmasi. Transisi ke `VERIFIED` dan `ACTIVE` **memerlukan sign-off Owner sebagai Dokter PJ Klinis** setelah kesiapan personel dan tata kelola terkait ditelaah; Admin tidak dapat mengaktifkan layanan sendiri. Perubahan ketersediaan petugas tidak otomatis mengubah legalitas layanan. Layanan `DRAFT/SUSPENDED` dapat ditampilkan sebagai “Belum tersedia” jika sesuai kebijakan, tetapi **tanpa tombol booking aktif**.
 
 ## 4.3 Alur layanan khusus
 
@@ -163,6 +163,8 @@ State katalog: `DRAFT → VERIFIED → ACTIVE ↔ SUSPENDED → RETIRED`. Hanya 
 - Pramurukti nonmedis dipisahkan dari tugas perawat; tidak ada prosedur klinis yang dapat dieksekusi lewat akun caregiver.
 - Lab harus mempunyai identitas permintaan dan pasien, label sampel, waktu pengambilan, kondisi transport, penerimaan lab, hasil rujukan, dan akses hasil yang dibatasi.
 - Pemantauan pasien rentan (anak/lansia) memperhitungkan persetujuan dari pihak yang berwenang dan relasi wali/kuasa.
+
+Pada `ADMIN_REVIEW`, Admin menangani aspek administratif dan, **bila diberi scope `CCO` oleh Owner**, penilaian kelayakan klinis awal. Keputusan diagnosis, instruksi dan resep tetap berada pada dokter berwenang. Tanpa scope `CCO`, Admin tidak dapat menyatakan kelayakan klinis.
 
 # 5. Wilayah layanan: SIDRAP-LOCK
 
@@ -259,6 +261,8 @@ Payload signup publik yang memuat `role=doctor/nurse/pharmacy/admin/vendor` dito
 - Untuk layanan profesi yang belum memiliki workflow aman, kategorinya boleh ditampilkan sebagai informasi atau menerima permintaan konsultasi administratif **tanpa konfirmasi booking klinis**, berdasarkan kebijakan yang disetujui.
 - Pengambilan sampel mempunyai kode unik, label, verifikasi pasien, dokumentasi rantai penguasaan, penanda sampel ditolak, dan pelaporan hasil melalui pihak berwenang.
 
+Pada `ADMIN_REVIEW`, Admin menangani aspek administratif dan, **bila diberikan scope `CCO` oleh Owner**, kelayakan klinis awal sesuai kewenangan. Diagnosis, instruksi dan resep tetap merupakan keputusan dokter berwenang.
+
 # 8. Model status dan rekonsiliasi
 
 ## 8.1 Booking
@@ -330,7 +334,7 @@ Sistem menerapkan transactional outbox atau mekanisme andal setara, retry berbat
 
 ## 9.6 DB-ADM — Admin/Owner
 
-`ADM-01` ringkasan operasional agregat; `ADM-02` review booking/triase lokasi; `ADM-03` dispatch, shift dan eligibility; `ADM-04` staf & dokumen izin; `ADM-05` verifikasi kurir dan mitra apotek; `ADM-06` katalog serta status aktivasi layanan; `ADM-07` invoice, pembayaran dan refund; `ADM-08` pelacakan gangguan RME/apotek/kurir; `ADM-09` audit akses operasional; `ADM-10` pelaporan KPI; `ADM-11` Owner workflow untuk rekrutmen, kebijakan layanan dan tindakan berisiko. Admin **tidak** memiliki mode universal untuk membuka semua PHI.
+`ADM-01` ringkasan operasional agregat; `ADM-02` review booking/triase lokasi; `ADM-03` dispatch, shift dan eligibility administratif; `ADM-04` staf & dokumen izin; `ADM-05` verifikasi kurir dan mitra apotek; `ADM-06` pengelolaan katalog, dengan aktivasi hanya setelah sign-off Owner sebagai PJ Klinis; `ADM-07` invoice, pembayaran dan refund; `ADM-08` pelacakan gangguan RME/apotek/kurir; `ADM-09` audit akses operasional; `ADM-10` pelaporan KPI; `ADM-11` Owner workflow untuk rekrutmen, kebijakan layanan dan tindakan berisiko. Admin **tidak** memiliki mode universal untuk membuka semua PHI. Penilaian eligibility klinis awal saat `ADMIN_REVIEW` hanya dengan scope `CCO` eksplisit dari Owner dan audit akses.
 
 ## 9.7 Developer Console Patah Pensil (teknis)
 
