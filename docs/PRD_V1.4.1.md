@@ -6,7 +6,7 @@
 |---|---|
 | Nama produk | **MADISING** |
 | Pemilik/penyelenggara | Owner MADISING adalah dokter yang sekaligus Dokter Penanggung Jawab Klinis homecare. Operasional aplikasi harian dijalankan oleh satu akun Admin yang dipegang tenaga medis yang ditunjuk Owner. |
-| Vendor pengembang dan pemelihara | **Patah Pensil** (vendor eksternal pembuat dan pemelihara aplikasi; bukan pemilik MADISING, bukan Admin, bukan pemberi layanan kesehatan; akses teknis terpisah dari akses klinis/operasional) |
+| Vendor pengembang dan pemelihara | **Patah Pensil** (pemilik kode/repository dan penanggung jawab pengembangan, arsitektur, keamanan teknis serta maintenance; bukan Owner MADISING, bukan Admin, bukan pemberi layanan kesehatan; akses teknis terpisah dari akses klinis/operasional) |
 | Dokumen | PRD V1.4.1 — rancang implementasi, **untuk tinjauan dan persetujuan** |
 | Tanggal | 6 November 2026 |
 | Referensi pengalaman pengguna | `docs/reference/MADISING_UIUX_Prototype_V1.3.7.html` |
@@ -29,7 +29,7 @@ MADISING adalah sistem operasional untuk **layanan homecare milik sendiri** di S
 
 1. **Safety first:** tanda gawat darurat tidak diproses sebagai booking biasa; tindakan hanya oleh personel yang kompeten, berwenang, serta berdasarkan keputusan/instruksi yang sah.
 2. **Six-dashboard lock:** tepat enam dashboard operasional. Developer Console Patah Pensil adalah konsol teknis terpisah, bukan dashboard pelayanan ketujuh.
-3. **Single source of clinical truth:** RME existing tetap menjadi rujukan catatan medis; MADISING adalah orkestrasi kunjungan dan integrasi, bukan mengganti RME tanpa keputusan resmi.
+3. **Interoperabilitas SATUSEHAT sebagai prioritas:** mulai R0, Patah Pensil menilai jalur RME existing maupun integrasi langsung yang memenuhi persyaratan fasyankes/partner system. RME existing tetap sumber catatan medis sampai keputusan integrasi dan klasifikasi data klinis OPEN-04 diselesaikan; MADISING tidak otomatis menjadi RME baru.
 4. **Privacy by design:** data pasien dan berkas klinis hanya diterima, disimpan, diteruskan, dan ditampilkan sejauh dibutuhkan oleh peran yang sah.
 5. **Lean engineering:** satu basis kode Flutter untuk Android/iOS, web responsif, backend modular monolith, database terpusat, integrasi melalui adapter; tidak membuat layanan infrastruktur kompleks tanpa kebutuhan terbukti.
 6. **Operasional yang dapat diverifikasi:** status layanan, penugasan, persetujuan, pembayaran, sinkronisasi dan kegagalan harus nyata di backend, bukan sekadar animasi UI.
@@ -76,9 +76,9 @@ MADISING adalah sistem operasional untuk **layanan homecare milik sendiri** di S
 | SERVICE-CATALOG-LOCK | Kesembilan kategori V1.3.7 tercantum; ketersediaan aktual tetap berdasarkan persetujuan aktivasi layanan. |
 | PROTOTYPE-LOCK | Visual utama dan struktur pengalaman V1.3.7 menjadi referensi desain; prototipe bukan bukti keamanan produksi. |
 
-**Klarifikasi tata kelola V1.4.1 (change request atas interpretasi GOVERNANCE-LOCK; isi tabel LOCK di atas tetap dipertahankan):** Owner, Admin, dan Vendor adalah tiga pihak berbeda. Owner dapat tetap memegang konteks ADM sesuai ketentuan ini, tetapi operasional harian dijalankan Admin yang ditunjuk. Klarifikasi ini memerlukan persetujuan Owner dalam kapasitas Owner dan Dokter PJ Klinis melalui OPEN-12.
+**Klarifikasi tata kelola V1.4.1 (change request atas interpretasi GOVERNANCE-LOCK; baris LOCK historis dipertahankan):** Owner, Admin dan Vendor adalah pihak berbeda. Patah Pensil berwenang mengambil keputusan rekayasa perangkat lunak dan menjalankan kontrol teknis tanpa meminta Owner memahami JSON, database, CI/CD atau rincian API. Owner sebagai PJ Klinis menetapkan keputusan pelayanan, dan penyelenggara MADISING tetap menentukan dasar, tujuan serta otorisasi sah pemrosesan data pasien. Perubahan dari persetujuan teknis oleh Owner menjadi tata kelola teknis Vendor didaftarkan sebagai **CR-TECH-01** untuk penyelarasan OPEN-12; tidak menghapus gerbang legal, klinis, privasi atau ketentuan break-glass §12.4.
 
-Setiap perubahan terhadap ketentuan terkunci memerlukan change request, dampak keamanan/klinis, persetujuan pemilik, dan persetujuan penanggung jawab klinis untuk area medis.
+Perubahan ketentuan terkunci didokumentasikan sebagai change request beserta dampak keamanan, privasi dan klinis. Patah Pensil menentukan implementasi teknis; keputusan yang mengubah pelayanan, penggunaan data pasien atau kewajiban penyelenggara tetap memerlukan otorisasi pihak MADISING yang berwenang. Item yang belum mendapat persetujuan substantif tidak dianggap efektif hanya karena PR dokumentasi diterbitkan.
 
 ## 2.2 Fakta yang dilaporkan pemilik vs hal yang belum diverifikasi
 
@@ -112,9 +112,9 @@ Konsol teknis **di luar** keenam dashboard. Wajib mengelola status sistem, deplo
 - **Owner MADISING (dokter sekaligus PJ Klinis):** satu akun `INTERNAL` untuk `OWN` (dan konteks `ADM` bila dipakai) serta satu akun `CLINICIAN` terpisah untuk `DOC`, masing-masing memakai kredensial, MFA dan audit sendiri. Akses PHI oleh Owner hanya melalui akun/konteks `DOC` dengan relasi perawatan yang sah, **tidak pernah** lewat `OWN/ADM`. Kehadiran konteks `OWN` tidak membenarkan akses klinis otomatis.
 - **Admin operasional:** satu akun `INTERNAL` dengan role `ADM`, MFA wajib dan tidak mempunyai akses PHI bebas. Karena pemegang akun Admin adalah tenaga medis, Owner **dapat** memberikan scope `CCO` untuk penilaian kelayakan klinis awal di `ADMIN_REVIEW`; pemberian scope tercatat, dapat dicabut dan diaudit. Scope `CCO` tidak otomatis aktif dan bukan kewenangan diagnosis, instruksi atau resep dokter.
 - **Vendor Patah Pensil:** akun terpisah berjenis `VENDOR` dengan role `VEN`, tanpa akses PHI default, tanpa role `ADM/OWN`, dan bukan pemberi layanan kesehatan.
-- **Persetujuan operasi teknis:** rilis produksi, restore backup, akses istimewa JIT Vendor dan rotasi kredensial produksi diajukan/dieksekusi Vendor **setelah disetujui Owner**; Vendor dilarang menyetujui permintaannya sendiri. Kebutuhan persetujuan dan jejak audit berlaku meskipun maintenance dioperasikan Patah Pensil.
+- **Tata kelola operasi teknis — CR-TECH-01:** Patah Pensil menentukan arsitektur, database, API, implementasi keamanan, CI/CD, jadwal rilis, patch, backup/restore, dan rotasi kredensial teknis. **Persetujuan teknis operasional dikelola Patah Pensil**, dengan gerbang pengujian, pengendalian hak istimewa, pencatatan perubahan, dan audit; **Owner tidak diwajibkan memahami atau menyetujui detail teknis tiap tindakan**. Bila tindakan akan membuka PHI, mengubah tujuan pemrosesan data, memulihkan data klinis yang berdampak pada pelayanan, atau mengaktifkan layanan klinis baru, otorisasi sah dari MADISING sebagai pengendali/PJ Klinis tetap diperlukan sesuai cakupan dan kontrak. Tidak boleh memakai kewenangan Vendor untuk melampaui izin klinis/data. Ketentuan historis tentang persetujuan independen untuk operasi berisiko dicatat sebagai **perubahan tata kelola yang belum efektif sampai OPEN-12/OPEN-18 diselesaikan**, bukan dihapus diam-diam.
 - **Aktivasi staf — STAFF-LOCK:** Owner menyeleksi dan menyetujui tenaga/staf; Admin memeriksa dokumen/kredensial dan mengirim undangan sesuai persetujuan serta pemeriksaan kewenangan yang berlaku. Aktivasi tidak boleh mendahului persetujuan Owner dan syarat klinis yang relevan.
-- **Kepemilikan kode dan data (menggantikan GOV-07 V1.3.6; change request, efektif setelah OPEN-12):** Repository dan kode sumber dimiliki dan dikelola **Patah Pensil** sebagai pembuat aplikasi. Data pasien produksi serta backup-nya dikendalikan **MADISING** sebagai pengendali data; Patah Pensil adalah pemroses sesuai penetapan dan kontrak yang harus dituntaskan pada OPEN-18. Akses Vendor ke data produksi mengikuti persetujuan Owner dan dapat dicabut. Pengaturan hosting, DNS, dan serah terima ditetapkan melalui **OPEN-09** dan kontrak.
+- **Kepemilikan kode dan data (GOV-07 CR, efektif setelah OPEN-12):** Repository dan kode sumber dimiliki serta dikelola **Patah Pensil** sebagai pengembang. Data pasien produksi dan backup dikendalikan **MADISING**; Patah Pensil bertindak sebagai pemroses sesuai pengaturan yang harus dipastikan melalui OPEN-18. Akses ke PHI hanya dengan dasar, cakupan dan otorisasi sah dari MADISING, dapat dicabut dan wajib diaudit; akses ke sistem teknis tersanitasi tidak sama dengan hak baca PHI. Pemilihan hosting/DNS/arsitektur merupakan keputusan teknis Patah Pensil, sedangkan pengaturan pengendalian data, lokasi pemrosesan serta serah terima yang mengikat MADISING ditetapkan melalui OPEN-09 dan kontrak.
 - **Vendor bukan Admin (menggantikan GOV-03 V1.3.6; change request, efektif setelah OPEN-12):** Vendor **tidak dapat ditunjuk sebagai Admin operasional** dan tidak memegang role `ADM`/`OWN`. Ketentuan lama GOV-03 serta turunan ACC-11/ACC-T14 ditandai untuk diselaraskan melalui change request ini; identitas teknis `VEN` tetap terpisah.
 
 ## 3.3 Matriks akses minimum (ringkasan)
@@ -131,7 +131,7 @@ Legenda: `Y` diperbolehkan dengan scope; `L` terbatas metadata/status; `—` dil
 | Delivery | L | — | — | L | Y (ditugaskan) | L | — |
 | Credentialing SDM/mitra | — | L (diri sendiri) | L (diri sendiri) | L (mitra) | L (diri) | Y | — |
 | Ringkasan dan tagihan | L (milik) | — | — | L (terkait) | L (terkait) | Y | — |
-| Infrastruktur/CI/CD/backup | — | — | — | — | — | L (approval) | Y (scope teknis) |
+| Infrastruktur/CI/CD/backup | — | — | — | — | — | L (monitoring dampak layanan/data; bukan approval teknis rutin) | Y (scope teknis dan audit) |
 
 **¹ Catatan scope CCO pada kolom ADM/OWN:** khusus **Admin ber-role `ADM` yang diberi scope `CCO` oleh Owner**, penilaian kelayakan klinis awal di `ADMIN_REVIEW` boleh membaca data triase/keluhan **minimum yang diperlukan**, dengan audit. Scope ini **bukan akses diagnosis, resep atau RME** dan **belum diimplementasikan**. Kolom ADM/OWN untuk **Asesmen & dokumentasi perawatan** dan **Diagnosis/instruksi/resep** tetap `—`; konteks `OWN` tidak otomatis memperoleh scope CCO.
 
@@ -353,9 +353,9 @@ Sistem menerapkan transactional outbox atau mekanisme andal setara, retry berbat
 
 ## 9.7 Developer Console Patah Pensil (teknis)
 
-`VEN-01` metrik availability dan latency tanpa PHI; `VEN-02` alert/error log tersanitasi; `VEN-03` status integrasi/antrian; `VEN-04` deployment staging/produksi terotorisasi; `VEN-05` rollback dan versi; `VEN-06` jadwal/hasil backup; `VEN-07` restore dengan persetujuan terpisah; `VEN-08` kontrol akses istimewa JIT, MFA, timeout dan audit; `VEN-09` patch keamanan dan status kerentanan; `VEN-10` uji integrasi sandbox dan redaksi data; `VEN-11` incident runbook, pelacakan postmortem; `VEN-12` pencabutan akses vendor dan rotasi kredensial; `VEN-13` status retensi/audit kesehatan sistem.
+`VEN-01` metrik availability dan latency tanpa PHI; `VEN-02` alert/error log tersanitasi; `VEN-03` status integrasi/antrian; `VEN-04` deployment staging/produksi dengan gerbang teknis Vendor; `VEN-05` rollback dan versi; `VEN-06` jadwal/hasil backup; `VEN-07` restore melalui runbook teknis yang diaudit, dengan otorisasi pengendali data bila melibatkan data pasien/perubahan catatan klinis; `VEN-08` kontrol akses istimewa JIT, MFA, timeout dan audit, tanpa akses PHI otomatis; `VEN-09` patch keamanan dan status kerentanan; `VEN-10` uji integrasi Sandbox SATUSEHAT/RME dan redaksi data; `VEN-11` incident runbook, pelacakan postmortem; `VEN-12` pencabutan akses Vendor dan rotasi kredensial; `VEN-13` status retensi/audit kesehatan sistem.
 
-**Batas implementasi konsol:** pada rilis awal, fungsi maintenance dapat berupa dashboard teknis terbatas yang mengintegrasikan workflow GitHub Actions, monitoring, backup dan tiket yang sudah ada. Tidak perlu membangun ulang platform DevOps dari nol. Operasi berisiko tetap diaudit dan memperoleh persetujuan.
+**Batas implementasi konsol:** pada rilis awal, fungsi maintenance dapat berupa dashboard teknis terbatas yang mengintegrasikan workflow GitHub Actions, monitoring, backup dan tiket yang sudah ada. Tidak perlu membangun ulang platform DevOps dari nol. Operasi berisiko tetap diaudit dan menjalani gerbang otorisasi teknis Vendor; akses PHI atau perubahan pelayanan memerlukan otorisasi yang sah dari pihak MADISING.
 
 # 10. Data dan skema minimum
 
@@ -389,11 +389,11 @@ Sistem menerapkan transactional outbox atau mekanisme andal setara, retry berbat
 ## 11.1 Komponen target
 
 ```text
-Android / iOS (Flutter)    Web responsif (Next.js)
+Android / iOS (Flutter)    Web responsif (stack OPEN-13)
             \             /
              TLS / Edge Security
                       |
-               API (NestJS)
+               API modular (stack OPEN-13)
       [AuthN/AuthZ, booking, clinical adapter,
        dispatch, pharmacy, courier, billing,
        audit, maintenance integration]
@@ -476,7 +476,7 @@ Flutter dapat membangun Android/iOS dari satu codebase, tetapi artefak iOS tetap
 - Alur perubahan: issue → feature branch → Pull Request → CI + review → staging → UAT → persetujuan rilis → deployment produksi.
 - CI: formatting, lint, typecheck, unit test, integration tests, Flutter analyze/test, security/dependency/secret scanning, dan kontrol policy yang bisa diotomasi. Workflow tidak boleh mendistribusikan secrets pada PR yang tidak dipercaya.
 - CD: staging otomatis hanya dengan synthetic data; produksi menggunakan environment approval, protected secrets/OIDC, deploy idempotent, smoke test, rollback, release tag.
-- Rilis kritis, restore, dan akses istimewa diajukan Vendor Patah Pensil serta **disetujui Owner** sesuai §3.2.1; Vendor tidak dapat menyetujui permintaannya sendiri. Rotasi kredensial produksi mengikuti mekanisme persetujuan yang sama.
+- Perubahan teknis rutin/kritis (deploy, rollback, patch, restore teknis, rotasi kredensial) dikelola oleh **Patah Pensil** berdasarkan kontrol perubahan, CI, audit, keamanan, dan risiko terdokumentasi (**CR-TECH-01**). Owner tidak menjadi approver teknis per deployment. Aktivitas yang memerlukan akses PHI atau keputusan klinis tetap tunduk pada dasar dan otorisasi sah MADISING sebagai pengendali data/PJ Klinis. Pemisahan pelaksana dan verifikasi teknis yang disyaratkan harus dipenuhi sebelum produksi; prosedur akses darurat §12.4 tetap berlaku.
 - Pemeliharaan minimal: monitoring, patch dependency, pembaruan platform Android/iOS, pencadangan, pengujian pemulihan, rotasi token, peninjauan akses mitra, analisis insiden, dan dokumentasi release.
 
 ## 13.2 Kriteria DoD (Definition of Done)
@@ -485,7 +485,7 @@ Sebuah fitur baru boleh dinyatakan **selesai** bila: acceptance criteria lulus; 
 
 ## 13.3 Batas peran AI coding
 
-Agen AI membantu menulis kode, tes, dokumentasi, dan review awal, tetapi **tidak** otomatis mengesahkan kepatuhan atau keselamatan klinis. Keputusan klinis, review hasil uji keamanan dan persetujuan produksi tetap ditandatangani manusia yang berwenang.
+Agen AI membantu menulis kode, tes, dokumentasi, dan review awal, tetapi **tidak** otomatis mengesahkan kepatuhan atau keselamatan klinis. Patah Pensil bertanggung jawab atas keputusan teknis dan review keamanan; keputusan klinis dan otorisasi penggunaan data pasien tetap pada pejabat MADISING yang berwenang. Rilis teknis dan izin membuka layanan klinis adalah dua gerbang berbeda.
 
 # 14. Antarmuka dan pengalaman pengguna
 
@@ -608,7 +608,7 @@ Tidak ada go-live klinis sebelum:
 3. Autentikasi/otorisasi server-side, MFA, pemeriksaan tenant/tugas, upload privat, audit, backup dan restore berfungsi dengan bukti uji.
 4. Threat model ditinjau; pengujian keamanan independen berbasis risiko dilakukan untuk alur klinis dan peran; temuan kritis/tinggi tidak dibiarkan tanpa penanganan yang dapat dipertanggungjawabkan.
 5. Pengujian klinis dan UAT enam dashboard relevan lulus dengan skenario negatif dan kegagalan jaringan/RME/mitra.
-6. Persetujuan final dari Owner, penanggung jawab klinis dan penanggung jawab keamanan dicatat; Patah Pensil melaksanakan rilis yang telah disetujui.
+6. Gerbang kesiapan klinis dan pemrosesan data pasien disahkan pihak MADISING yang berwenang; Patah Pensil bertanggung jawab atas pemeriksaan keamanan dan keputusan rilis teknis. Tidak diperlukan sign-off Owner atas perintah CI/CD, JSON atau komponen teknis per deployment.
 7. Store review, legal notices, privacy policy, incident contacts dan mekanisme support sudah siap sebelum publikasi aplikasi.
 
 Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data sintetis**, meskipun UI terlihat siap.
@@ -644,20 +644,20 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 | OPEN-01 | PJ Klinis telah ditetapkan: Owner (dokter). Identitas resmi fasilitas/pemberi layanan, cakupan izin per layanan serta PJ RME tetap terbuka. | Owner (PJ Klinis) |
 | OPEN-02 | Daftar layanan yang **benar-benar aktif** pertama kali dan SOP masing-masing | Owner + Dokter PJ |
 | OPEN-03 | Daftar tenaga, profesi tambahan, bukti kewenangan dan lokasi kerja | Owner/Admin + PJ klinis |
-| OPEN-04 | Vendor/kontrak API RME, sandbox, mapping nomor pasien/kunjungan | RME owner + Patah Pensil |
+| OPEN-04 | **Prioritas R0 SATUSEHAT**: verifikasi status fasyankes dan RME existing, API/prosedur bridging yang sah, kredensial Sandbox (jika memenuhi syarat), mapping pasien/encounter, jalur via RME atau integrasi langsung | Patah Pensil (teknis) + penanggung jawab fasyankes/RME untuk identitas dan otorisasi |
 | OPEN-05 | Metode konsultasi dokter serta penilaian layanan jarak jauh | PJ klinis + legal |
 | OPEN-06 | Perjanjian mitra apotek, courier, lab, handling obat/sampel | Admin + mitra |
 | OPEN-07 | Payment provider/merchant of record/refund/invoice | Owner/Finance |
 | OPEN-08 | Persetujuan privasi, subjek data, retensi, DPIA dan kontrak pemroses | Pengendali data + legal |
-| OPEN-09 | Penyedia hosting, lokasi pemrosesan dan strategi pemulihan | Owner + Patah Pensil |
+| OPEN-09 | Hosting, DNS, lokasi pemrosesan, pengaturan akses/serah terima dan strategi pemulihan; keputusan teknologi oleh Vendor, pengendalian data dan kontrak oleh MADISING | Patah Pensil (teknis) + MADISING (data/kontrak) |
 | OPEN-10 | Ketersediaan perangkat pengujian iOS dan publikasi Android/iOS | Patah Pensil |
 | OPEN-11 | Parameter SLO/RPO/RTO serta kapasitas layanan | Owner + PJ klinis + Patah Pensil |
-| OPEN-12 | Persetujuan master PRD dan kedudukan dokumen ini sebagai pengganti V1.3.6 | Owner (juga dalam kapasitas Dokter PJ Klinis) |
-| OPEN-13 | Stack backend/web: NestJS + Next.js vs Node tanpa framework; baseline `.mjs` saat ini akan di-port atau dipertahankan | Vendor + Owner |
+| OPEN-12 | Pengesahan substansi klinis/data serta perubahan GOVERNANCE-LOCK/CR-TECH-01 untuk kedudukan PRD V1.4.1 terhadap V1.3.6; **bukan** persetujuan JSON, stack atau operasi DevOps | Patah Pensil (spesifikasi teknis) + MADISING (keputusan klinis/data yang mengikatnya) |
+| OPEN-13 | Patah Pensil memutuskan stack backend/web (NestJS + Next.js vs Node `.mjs` tanpa framework) berdasarkan hasil uji dan kebutuhan interoperabilitas | Patah Pensil |
 | OPEN-14 | Model akses profesi nonperawat dalam batas enam dashboard, tanpa mengasumsikan role `NRS` | Owner (PJ Klinis) |
 | OPEN-15 | Dokumentasi perawat offline (NRS-08), mempertimbangkan konektivitas kecamatan pinggiran | Owner + Vendor |
 | OPEN-16 | Kanal kurir: PWA vs Flutter; termasuk keterbatasan lokasi latar belakang PWA di iOS | Vendor |
-| OPEN-17 | Kesesuaian lingkup R1 (layanan aktif, Android/iOS, pentest, DPIA) dengan plafon anggaran | Owner + Vendor |
+| OPEN-17 | Kelayakan teknis/pengujian R1 terhadap plafon sumber daya dan prioritas klinis; tidak mengurangi kontrol wajib | Patah Pensil (teknis) + MADISING (prioritas pelayanan) |
 | OPEN-18 | Penetapan penanggung jawab data/privasi dan evaluasi kebutuhan Pejabat PDP; pengendali = penyelenggara MADISING, pemroses = Patah Pensil (perlu pengesahan legal dan kontrak); Vendor tidak merangkap PJ privasi | Owner + legal |
 
 # 21. Change log dan traceability
@@ -676,7 +676,7 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 | Rilis | Alur MVP dan mitra | Bertahap R0–R3; seluruh kategori terlihat, aktivasi sesuai kemampuan yang sah |
 | Dokumen biaya | Rencana terpisah | Tidak ada nominal biaya di PRD |
 | **V1.4.1 — pemisahan pihak** | Interpretasi lama Owner/Admin/Vendor | Owner dokter sekaligus PJ Klinis, satu Admin tenaga medis yang ditunjuk, Vendor Patah Pensil eksternal; pemisahan akun dan audit |
-| **V1.4.1 — persetujuan teknis** | Tata kelola Vendor | Deployment produksi, restore, JIT dan rotasi kredensial produksi memerlukan approval Owner; Vendor tidak boleh self-approve |
+| **V1.4.1 — persetujuan teknis (CR-TECH-01)** | Ketentuan sebelumnya mensyaratkan approval Owner pada operasi teknis | Patah Pensil memutuskan dan menjalankan perubahan teknis melalui gerbang review, keamanan dan audit. Owner tidak menyetujui instruksi teknis rutin; data pasien/keputusan klinis tetap berada pada otorisasi MADISING. CR belum mengesampingkan persetujuan pengendali dan ketentuan break-glass. |
 | **V1.4.1 — kewenangan CCO** | Review administratif/klinis belum dipisah rinci | Admin hanya menilai klinis awal dengan scope `CCO` dari Owner; tanpa akses PHI bebas |
 | **V1.4.1 — aktivasi katalog** | Sign-off klinis generik | Transisi `VERIFIED/ACTIVE` harus ditandatangani Owner sebagai PJ Klinis |
 | **V1.4.1 — status booking** | Status `REQUESTED` dan definisi slot belum lengkap | Penamaan `REQUESTED`, `CONFIRMED` dengan kapasitas dicadangkan, `ASSIGNED` atomik, pembayaran tetap OPEN-07 |
@@ -792,9 +792,9 @@ Dokumen ini adalah **draft pengganti terstruktur** untuk PRD V1.3.6 berdasarkan 
 
 Tanda persetujuan yang dibutuhkan:
 
-- **Owner MADISING (dokter) — juga dalam kapasitas Dokter PJ Klinis:** ruang lingkup produk, prioritas layanan, SOP, eligibility, triase, instruksi, rujukan, dokumentasi, aktivasi katalog dan penetapan Vendor Patah Pensil.
+- **Owner MADISING (dokter) — juga dalam kapasitas Dokter PJ Klinis:** kebijakan pelayanan, SOP, eligibility, triase, instruksi, rujukan, dokumentasi klinis dan aktivasi katalog; otorisasi institusional atas tujuan/penggunaan data pasien bersama pejabat data yang sah. Tidak diminta menyetujui konfigurasi JSON, pilihan database, desain API atau perintah deployment.
 - **Penanggung jawab data/privasi — belum ditetapkan (OPEN-18):** kepatuhan pengolahan data, kontrol akses, integrasi, retensi, kontrak pemrosesan dan DPIA; persetujuan dilakukan setelah penetapannya sah.
-- **Vendor Patah Pensil — kelayakan teknis:** implementasi, pengujian, operasi, backup, dan CI/CD; bukan penanda tangan klinis ataupun wakil Owner.
+- **Vendor Patah Pensil — kelayakan teknis:** keputusan arsitektur, implementasi, keamanan teknis, integrasi SATUSEHAT, testing, deployment, backup dan CI/CD; bukan penanda tangan klinis atau pengendali data.
 
 Admin operasional bukan penanda tangan PRD; fungsi Admin dijalankan berdasarkan penunjukan dan batas kewenangan Owner.
 
