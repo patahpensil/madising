@@ -1,0 +1,70 @@
+{
+  "version": "1.3.7",
+  "pilotRegion": "Kabupaten Sidenreng Rappang",
+  "availabilityConfirmed": false,
+  "services": [
+    {
+      "id": "doctor",
+      "name": "Layanan Medis & Kunjungan Dokter",
+      "staff": "Dokter terverifikasi",
+      "route": "admin_review",
+      "status": "planned"
+    },
+    {
+      "id": "special_nursing",
+      "name": "Tindakan Keperawatan Khusus",
+      "staff": "Perawat sesuai kompetensi dan instruksi klinis",
+      "route": "nursing_demo",
+      "status": "planned"
+    },
+    {
+      "id": "wound",
+      "name": "Perawatan Luka",
+      "staff": "Perawat/perawat luka kompeten",
+      "route": "nursing_demo",
+      "status": "planned"
+    },
+    {
+      "id": "physio",
+      "name": "Fisioterapi & Rehabilitasi",
+      "staff": "Fisioterapis sesuai izin dan kompetensi",
+      "route": "admin_review",
+      "status": "planned"
+    },
+    {
+      "id": "therapy",
+      "name": "Terapi Tambahan",
+      "staff": "Terapis sesuai kewenangan",
+      "route": "admin_review",
+      "status": "planned"
+    },
+    {
+      "id": "postop",
+      "name": "Perawatan Pascaoperasi",
+      "staff": "Perawat dengan koordinasi dokter",
+      "route": "nursing_demo",
+      "status": "planned"
+    },
+    {
+      "id": "elderly",
+      "name": "Perawatan Lansia & Pramurukti",
+      "staff": "Pramurukti/caregiver atau perawat sesuai tugas",
+      "route": "admin_review",
+      "status": "planned"
+    },
+    {
+      "id": "mother_baby",
+      "name": "Perawatan Ibu & Bayi",
+      "staff": "Bidan/tenaga kesehatan berwenang",
+      "route": "admin_review",
+      "status": "planned"
+    },
+    {
+      "id": "lab",
+      "name": "Pemeriksaan Laboratorium",
+      "staff": "Tenaga kompeten dan mitra laboratorium resmi",
+      "route": "admin_review",
+      "status": "planned"
+    }
+  ]
+}
