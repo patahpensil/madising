@@ -6,8 +6,9 @@ Mengacu PRD §16 dan keputusan LOCK V1.3.6; **V1.4.1 menunggu persetujuan OPEN-1
 
 - [x] Repository connection, private access and initial branch.
 - [x] Foundation: web/static, API/health, Flutter skeleton, CI.
-- [ ] Persetujuan PRD V1.4.1 (OPEN-12) dalam kapasitas Owner dan Dokter PJ Klinis; verifikasi kesetaraan LOCK V1.3.6.
-- [ ] Putuskan **OPEN-04** (API/prosedur RME, klasifikasi data klinis, PJ RME), **OPEN-13** (stack Node vs NestJS/Next.js), **OPEN-15** (offline perawat), **OPEN-16** (kurir PWA vs Flutter), **OPEN-17** (cakupan R1 dan pengujian), dan **OPEN-18** (PJ data/privasi dan evaluasi Pejabat PDP) **sebelum keluar R0**.
+- [ ] Patah Pensil mengesahkan baseline teknis PRD; substansi pelayanan, penggunaan data, dan perubahan LOCK historis yang mengikat MADISING diselesaikan pada OPEN-12 bersama pihak MADISING yang berwenang. Owner tidak perlu mengesahkan JSON/CI/CD.
+- [ ] **Prioritas R0 SATUSEHAT (OPEN-04):** Patah Pensil verifikasi fasyankes, RME existing, opsi API/bridging sah versus jalur langsung yang berhak, use case FHIR, dan kelayakan Sandbox; uji mock dengan data sintetis bila belum ada akses. Tidak mengklaim Production terhubung.
+- [ ] Putuskan **OPEN-04**, **OPEN-13** (stack diputuskan Patah Pensil), **OPEN-15** (offline perawat), **OPEN-16** (kurir), **OPEN-17** (cakupan R1 dan pengujian), dan **OPEN-18** (penanggung jawab privasi serta hubungan pengendali–pemroses) **sebelum keluar R0**.
 - [ ] Rancang matriks hak akses enam dashboard, akun terpisah Owner/DOC/Admin/Vendor, pilihan scope CCO (belum aktif), dan pengujian negatif.
 - [ ] Periksa kelayakan provider OIDC, koneksi database, boundary RME dan threat model; siapkan staging data sintetis, backup/restore serta persetujuan perubahan.
 - [ ] Putuskan model akses profesi nonperawat (**OPEN-14**) sebelum mengaktifkan workflow profesi terkait; jangan menganggap role NRS berlaku.
@@ -19,10 +20,10 @@ Mengacu PRD §16 dan keputusan LOCK V1.3.6; **V1.4.1 menunggu persetujuan OPEN-1
 - [ ] Dashboard Pasien/Perawat/Dokter/Admin dibatasi peran; shell dashboard Apotek/Kurir tetap ada, transaksi menunggu kesiapan R2.
 - [ ] Katalog sembilan layanan dengan status dan sign-off aktivasi Owner sebagai PJ Klinis.
 - [ ] Triase, validasi tujuan Sidrap, booking, slot/capacity reservation, assignment atomik tenaga eligible; ADMIN_REVIEW dengan CCO hanya jika diberikan Owner.
-- [ ] Kunjungan perawat, konsultasi dokter, dokumentasi aman dengan consent, **integrasi RME existing di R1** atau prosedur bridging yang disahkan sesuai hasil OPEN-04.
+- [ ] Kunjungan perawat, konsultasi dokter, dokumentasi aman dengan consent, **integrasi RME existing di R1** atau prosedur bridging yang disahkan sesuai hasil OPEN-04; implementasi adapter SATUSEHAT sesuai jalur resmi yang diverifikasi, tanpa memaksakan akses Production jika persyaratan belum selesai.
 - [ ] Staging, UAT enam peran, pentest relevan, penilaian privasi/DPIA sesuai kebutuhan, backup/restore dan sign-off klinis/keamanan sebelum pasien nyata.
 - [ ] Laporan operasional dasar, penanganan insiden, monitoring dan fungsi maintenance Vendor terkendali sesuai kebutuhan R1.
-- [ ] Peninjauan publikasi Android/iOS dan go-live manual setelah persetujuan Owner/PJ Klinis dan gerbang keamanan terpenuhi.
+- [ ] Patah Pensil menangani build, signing, publikasi teknis dan rilis. Go-live layanan klinis/data pasien hanya setelah persetujuan substantif MADISING/PJ Klinis, pengaturan data dan gerbang keamanan terpenuhi.
 
 ## R2 — Apotek dan kurir
 
@@ -35,4 +36,4 @@ Mengacu PRD §16 dan keputusan LOCK V1.3.6; **V1.4.1 menunggu persetujuan OPEN-1
 - [ ] Aktivasi profesi khusus (fisioterapis, bidan, terapis, petugas lab, pramurukti) sesuai keputusan OPEN-14, izin, kompetensi, SOP dan sign-off Owner.
 - [ ] Paket perawatan ulang sesuai indikasi klinis, laporan KPI, optimasi jadwal dan ETA bila dibutuhkan.
 
-**Aturan rilis:** Tidak ada workflow klinis/PHI nyata tanpa gerbang persetujuan; Vendor mengeksekusi operasi teknis produksi hanya setelah approval Owner.
+**Aturan rilis:** Keputusan teknis dan deployment berada pada Patah Pensil dengan CI, keamanan dan audit yang wajib. Tidak ada workflow klinis/PHI nyata tanpa otorisasi sah MADISING dan gerbang klinis/privasi; perubahan atas ketentuan persetujuan historis melalui CR-TECH-01 belum dianggap efektif sebelum OPEN-12/OPEN-18.

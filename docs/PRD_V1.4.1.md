@@ -419,13 +419,24 @@ Flutter dapat membangun Android/iOS dari satu codebase, tetapi artefak iOS tetap
 - Tidak memerlukan Kafka/Redis/microservices pada tahap awal kecuali kebutuhan operasional nyata membuktikan manfaat. Background job boleh memakai queue sederhana yang tahan restart dan aman.
 - Notifikasi WhatsApp/SMS/email hanya membawa informasi minimum; jangan mencantumkan diagnosis, foto atau isi rekam medis di pesan push.
 
-## 11.3 RME dan SATUSEHAT
+## 11.3 RME dan SATUSEHAT — prioritas arsitektur sejak R0
 
-- RME existing adalah sistem pencatatan resmi; integrasi harus mendukung identitas pasien, encounter, catatan tindakan, resep yang sah, dan hasil sinkronisasi sesuai cakupan API vendor RME.
-- Catatan harus memiliki status antrean/outbox dan reconciliation. Jika API tidak tersedia, gunakan prosedur perantara aman, terotorisasi dan dibuktikan; jangan mengirim informasi klinis melalui grup chat biasa.
-- Integrasi SATUSEHAT mengikuti tanggung jawab dan identitas fasilitas yang sebenarnya serta dokumentasi use case FHIR yang relevan; **tidak** mengklaim koneksi SATUSEHAT sebelum credential, sandbox, mapping dan hasil uji tersedia.
+**Tujuan utama:** MADISING diupayakan interoperabel dengan **SATUSEHAT Platform Kementerian Kesehatan**, bukan mengklaim sudah tersambung. Patah Pensil memimpin seluruh investigasi API, rancangan adapter, mapping HL7 FHIR R4, implementasi, keamanan integrasi, pengujian Sandbox dan monitoring. Owner/PJ Klinis tidak diminta menentukan endpoint, struktur JSON, atau metode autentikasi.
 
-**Gerbang klasifikasi data klinis (rujuk §10.2):** keputusan **OPEN-04** wajib ditutup saat R0. Jika tidak ada API/prosedur bridging RME yang sah, status catatan klinis MADISING sebagai kemungkinan rekam medis dan kewajiban terkait harus diputuskan Owner/PJ Klinis bersama legal sebelum desain `clinical_adapter` dilanjutkan.
+**Dua jalur yang harus diverifikasi pada OPEN-04 (belum diputuskan):**
+
+1. **Jalur A — melalui RME existing:** periksa sistem RME yang digunakan oleh fasyankes, status keterhubungannya ke SATUSEHAT, API/bridging resmi atau prosedur pertukaran data yang sah, hak penggunaan dan pemetaan identitas pasien/kunjungan. Gunakan jalur ini jika dukungan vendor RME dan perjanjian data memadai; jangan mengandaikan setiap RME menawarkan API.
+2. **Jalur B — integrasi langsung yang sah:** Patah Pensil mengevaluasi persyaratan registrasi/validasi penyedia sistem RME (*partner system*) atau opsi fasyankes yang sah, lalu menerapkan antarmuka FHIR sesuai hak akses yang benar-benar diberikan. **Tidak boleh menganggap akun Vendor sendiri otomatis mempunyai kode akses Production.** Kredensial Production terkait fasyankes yang memenuhi persyaratan dan pilihan sistem RME; kewenangan institusional tetap harus diurus oleh pihak fasyankes.
+
+**Pekerjaan R0:** identifikasi identitas resmi fasyankes dan PIC institusional, pilihan RME, status akun SATUSEHAT/Sandbox, use case FHIR homecare yang tersedia, pola mapping patient/encounter, data minimization, alur persetujuan berbagi data, dan contract tests dengan data sintetis. Jika akses Sandbox belum tersedia, gunakan mock FHIR lokal dan tandai status **belum terkoneksi**, bukan membuat kredensial atau mengklaim transaksi SATUSEHAT.
+
+**Pekerjaan R1:** bangun `satusehat_adapter` yang terpisah dari `clinical_adapter` bila diperlukan, dengan validasi schema/profil FHIR, verifikasi OAuth/token lewat backend, vault/secret manager, pemetaan referensi patient/encounter yang sah, transaksi idempotent, antrean/outbox, retry aman, dead-letter handling, rekonsiliasi kegagalan, audit metadata dan pembatasan data sesuai otorisasi. Jangan menyimpan NIK/diagnosis/isi rekam medis dalam log atau payload error. Catatan pasien tetap bersumber pada RME yang sah sampai perubahan statusnya ditetapkan melalui OPEN-04.
+
+**Gerbang akses Production:** verifikasi status fasyankes, jalur registrasi sistem RME/partner, kewenangan pemakaian kredensial dan tujuan pertukaran data oleh MADISING sebagai pengendali, validasi skenario resmi, penilaian privasi, kontrol keamanan dan persetujuan klinis bila relevan. Tanpa ini integrasi tetap pada mock/Sandbox dan **tidak mengirim PHI nyata**. Tidak ada asumsi bahwa semua homecare otomatis memenuhi use case yang tersedia.
+
+**Gerbang klasifikasi data klinis (§10.2):** keputusan OPEN-04 wajib ditutup di R0. Jika RME tidak menyediakan API atau prosedur bridging sah, status catatan klinis MADISING sebagai kemungkinan rekam medis dan kewajiban terkait harus ditelaah PJ Klinis/legal sebelum skema `clinical_adapter` difinalkan.
+
+**Dokumentasi operasional:** [Rencana Integrasi SATUSEHAT](SATUSEHAT_INTEGRATION_PLAN.md), termasuk alternatif arsitektur, bukti verifikasi R0 dan kriteria uji. Rujukan primer: [Panduan Registrasi](https://satusehat.kemkes.go.id/platform/docs/id/registration-guide/), [Kode Akses API](https://satusehat.kemkes.go.id/platform/docs/id/api-code/), [Interoperabilitas](https://satusehat.kemkes.go.id/platform/docs/id/api-catalogue/integrations/).
 
 # 12. Keamanan aplikasi: kebutuhan yang tidak boleh dipotong
 
@@ -522,16 +533,16 @@ Agen AI membantu menulis kode, tes, dokumentasi, dan review awal, tetapi **tidak
 
 ## R0 — Spesifikasi dan fondasi (nonklinis)
 
-Hasil: PRD disahkan; pemetaan izin, skema data, threat model, desain arsitektur; prototipe dan katalog; repo private + CI; web/API/Flutter kerangka; data sintetis. **Tidak boleh** menerima data pasien nyata.
+Hasil: spesifikasi teknis dipimpin Patah Pensil; pemetaan izin, skema data, threat model, desain arsitektur; prototipe dan katalog; repo private + CI; web/API/Flutter kerangka; data sintetis. **Prioritas: verifikasi opsi koneksi SATUSEHAT/RME di OPEN-04 dan uji mock/Sandbox sesuai kelayakan akses.** **Tidak boleh** menerima data pasien nyata.
 
-**Gerbang keluar R0:** OPEN-04 (RME), OPEN-13 (stack), OPEN-15 (offline perawat), OPEN-16 (kanal kurir), OPEN-17 (kesesuaian scope dan pengujian), dan OPEN-18 (PJ data/privasi serta evaluasi kewajiban PDP) **harus diputuskan dan didokumentasikan** sebelum keluar dari R0; ketidaksiapan salah satu memblokir transisi ke R1, bukan dianggap otomatis telah selesai.
+**Gerbang keluar R0:** OPEN-04 (jalur SATUSEHAT/RME dan status kewenangan fasyankes), OPEN-13 (stack), OPEN-15 (offline perawat), OPEN-16 (kanal kurir), OPEN-17 (cakupan pengujian), dan OPEN-18 (pengaturan privasi/pengendali–pemroses) **harus diputuskan dan didokumentasikan** sebelum keluar dari R0. Patah Pensil menyelesaikan keputusan teknis dan membuktikan feasibility integrasi tanpa PHI; penetapan institusional/klinis/data tetap memerlukan otorisasi yang sah. Ketiadaan akses Sandbox atau Production tidak dapat ditutupi dengan klaim 'sudah terintegrasi'.
 
 ## R1 — Core Homecare pilot (kelayakan produksi terbatas)
 
 - Pendaftaran pasien dan kurir, provisioning internal, MFA, audit, penetapan consent/kuasa.
 - Katalog sembilan layanan dengan flag aktivasi; booking layanan yang telah siap, triase, Sidrap geofence, review Admin, jadwal, dispatch eligible.
 - Dashboard Pasien, Perawat, Dokter, Admin nyata dan role-scoped; DB-PHA/DB-CUR tetap tersedia sesuai kebutuhan alur, tetapi aktivasi transaksi ditahan hingga mitra siap.
-- Perawat: check-in, asesmen, konsultasi dokter, instruksi, consent, tindakan, dokumentasi privat, sinkronisasi RME atau prosedur bridging yang telah disahkan.
+- Perawat: check-in, asesmen, konsultasi dokter, instruksi, consent, tindakan, dokumentasi privat, sinkronisasi RME atau prosedur bridging yang telah disahkan. Adapter SATUSEHAT hanya diaktifkan sesuai hasil verifikasi R0, hak akses FHIR dan pengujian R1; tidak memaksa koneksi Production jika prasyarat institusional belum terpenuhi.
 - Status dan laporan dasar; monitoring, backup/restore, dan prosedur insiden.
 - **Gerbang go-live** seluruh kontrol keamanan dan keselamatan yang relevan harus lulus; layanan belum eligible tidak boleh diaktifkan.
 
@@ -581,7 +592,7 @@ Aktivasi bertahap fisio, terapi, ibu-bayi, lab, caregiver serta workflow profesi
 | UAT-28 | Push perubahan ke branch atau deploy produksi tanpa approval | Workflow sesuai perlindungan branch/environment memblokir operasi |
 | UAT-29 | Log, push dan CI mengandung input mirip PHI/OTP/token | Masking/redaction dan secret scan bekerja; tidak bocor ke penerima tak sah |
 | UAT-30 | Katalog 9 layanan di HP dan PC | Semua tampil sesuai desain; hanya ACTIVE dapat booking; copy tidak menipu pengguna |
-| UAT-31 | Vendor menyetujui sendiri deployment, restore atau akses JIT | Ditolak; tindakan teknis memerlukan persetujuan Owner dan audit, Vendor tidak bisa self-approve. |
+| UAT-31 | Deployment/restore/JIT dijalankan tanpa gerbang review keamanan dan audit, atau melibatkan akses PHI tanpa otorisasi pengendali | Ditolak. Patah Pensil bertanggung jawab atas approval teknis sesuai CR-TECH-01; akses PHI/keputusan klinis tidak dapat diberikan oleh Vendor sendiri. |
 | UAT-32 | Admin tanpa scope `CCO` menetapkan kelayakan klinis, atau mengaktifkan layanan tanpa sign-off Owner | Ditolak; eligibility klinis memerlukan scope `CCO`, aktivasi katalog memerlukan persetujuan Owner sebagai PJ Klinis. |
 | UAT-33 | Admin membuka diagnosis/foto klinis di luar scope `CCO` | Ditolak dan diaudit; izin operasional tidak mengizinkan akses PHI bebas. |
 
@@ -684,10 +695,12 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 | **V1.4.1 — klasifikasi rekam medis** | RME existing sebagai rujukan | Gerbang OPEN-04 memastikan status catatan klinis dan kewajiban RME sebelum skema `clinical_adapter` final |
 | **V1.4.1 — GOV-03 & GOV-07 (CR)** | GOV-03 memperbolehkan penunjukan Vendor sebagai Admin; GOV-07 menyatukan kendali infrastruktur/kode | Vendor tidak menjadi Admin; repo/kode milik Patah Pensil sebagai pembuat; data produksi dan backup dikendalikan MADISING; hosting/DNS/serah terima OPEN-09 dan kontrak |
 | **V1.4.1 — traceability** | Ketentuan dan uji rinci V1.3.6 | ROLE-LOCK di §2.1, pemetaan §21.1, nama status rekrutmen kanonik dan cabang STAFF-LOCK dipulihkan; persyaratan belum dimigrasi tetap berlaku melalui arsip |
+| **V1.4.1 — SATUSEHAT prioritas R0** | Integrasi RME hanya digambarkan sebagai adapter | Evaluasi jalur RME existing atau integrasi langsung sah, Sandbox/mock, FHIR mapping, production gate dan bukti verifikasi pada OPEN-04; Patah Pensil mengambil keputusan teknis |
+| **V1.4.1 — delegasi teknis (CR-TECH-01)** | Persetujuan teknis Owner menjadi gerbang tiap tindakan Vendor | Owner tidak menandatangani JSON/CI/CD; Vendor memimpin keamanan dan rilis teknis; keputusan klinis/data tetap pada MADISING; ketentuan lama yang terdampak dicatat sebagai CR untuk OPEN-12 |
 
 ## 21.1 Pemetaan ketentuan V1.3.6 → V1.4.1
 
-Pemetaan berikut disusun **dari ID dan teks yang benar-benar tercantum** dalam [arsip PRD V1.3.6](reference/MADISING_PRD_V1.3.6_Registrasi_Dashboard_Terkunci.md). Tanda **Dipindahkan** dipakai hanya untuk ketentuan dengan padanan substantif di V1.4.1; **Diubah (CR)** memerlukan persetujuan Owner melalui OPEN-12; **Tetap berlaku dari V1.3.6** berarti persyaratan rinci dalam arsip belum dinyatakan tergantikan atau belum memiliki padanan identik. Kolom lokasi menunjukkan padanan utama atau lokasi detail yang masih dipertahankan, **bukan** klaim bahwa kode sudah mengimplementasikannya.
+Pemetaan berikut disusun **dari ID dan teks yang benar-benar tercantum** dalam [arsip PRD V1.3.6](reference/MADISING_PRD_V1.3.6_Registrasi_Dashboard_Terkunci.md). Tanda **Dipindahkan** dipakai hanya untuk ketentuan dengan padanan substantif di V1.4.1; **Diubah (CR)** memerlukan penyelesaian OPEN-12 untuk dampak klinis/data atau perubahan ketentuan historis, bukan persetujuan Owner atas detail JSON/CI/CD; **Tetap berlaku dari V1.3.6** berarti persyaratan rinci dalam arsip belum dinyatakan tergantikan atau belum memiliki padanan identik. Kolom lokasi menunjukkan padanan utama atau lokasi detail yang masih dipertahankan, **bukan** klaim bahwa kode sudah mengimplementasikannya.
 
 **Cakupan terhitung:** GOV 7, MAINT 11, ACC 16, ACC-T 18, STAFF-T 14, GOV-T 4 (**70 ID wajib**); ditambah STAFF-01..10 (10 hard gate) dan MAINT-T01..12 (12 skenario maintenance), sehingga **92 ID sumber** dipetakan. Penomoran lama dijaga untuk regression testing. GOV-03 dan GOV-07 menggantikan keputusan terdahulu **hanya setelah disetujui melalui OPEN-12**; ACC-11, ACC-T14, GOV-T03, dan aspek kepemilikan MAINT-11 ikut terdampak perubahan itu.
 
