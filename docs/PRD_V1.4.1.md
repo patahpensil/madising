@@ -113,6 +113,8 @@ Konsol teknis **di luar** keenam dashboard. Wajib mengelola status sistem, deplo
 - **Vendor Patah Pensil:** akun terpisah berjenis `VENDOR` dengan role `VEN`, tanpa akses PHI default, tanpa role `ADM/OWN`, dan bukan pemberi layanan kesehatan.
 - **Persetujuan operasi teknis:** rilis produksi, restore backup, akses istimewa JIT Vendor dan rotasi kredensial produksi diajukan/dieksekusi Vendor **setelah disetujui Owner**; Vendor dilarang menyetujui permintaannya sendiri. Kebutuhan persetujuan dan jejak audit berlaku meskipun maintenance dioperasikan Patah Pensil.
 - **Aktivasi staf — STAFF-LOCK:** Owner menyeleksi dan menyetujui tenaga/staf; Admin memeriksa dokumen/kredensial dan mengirim undangan sesuai persetujuan serta pemeriksaan kewenangan yang berlaku. Aktivasi tidak boleh mendahului persetujuan Owner dan syarat klinis yang relevan.
+- **Kepemilikan kode dan data (menggantikan GOV-07 V1.3.6; change request, efektif setelah OPEN-12):** Repository dan kode sumber dimiliki dan dikelola **Patah Pensil** sebagai pembuat aplikasi. Data pasien produksi serta backup-nya dikendalikan **MADISING** sebagai pengendali data; Patah Pensil adalah pemroses sesuai penetapan dan kontrak yang harus dituntaskan pada OPEN-18. Akses Vendor ke data produksi mengikuti persetujuan Owner dan dapat dicabut. Pengaturan hosting, DNS, dan serah terima ditetapkan melalui **OPEN-09** dan kontrak.
+- **Vendor bukan Admin (menggantikan GOV-03 V1.3.6; change request, efektif setelah OPEN-12):** Vendor **tidak dapat ditunjuk sebagai Admin operasional** dan tidak memegang role `ADM`/`OWN`. Ketentuan lama GOV-03 serta turunan ACC-11/ACC-T14 ditandai untuk diselaraskan melalui change request ini; identitas teknis `VEN` tetap terpisah.
 
 ## 3.3 Matriks akses minimum (ringkasan)
 
@@ -460,7 +462,7 @@ Flutter dapat membangun Android/iOS dari satu codebase, tetapi artefak iOS tetap
 
 ## 13.1 Repository dan alur kerja
 
-- Repository resmi: `patahpensil/madising`, **private**; master branch `main` terlindungi bila fitur paket mendukung.
+- Repository resmi: `patahpensil/madising`, **private**, **milik Patah Pensil sebagai pembuat aplikasi** (lihat §3.2.1); master branch `main` terlindungi bila fitur paket mendukung.
 - Satu monorepo dengan direktori `apps/mobile`, `apps/web`, `apps/api`, `packages/shared` (jika dibutuhkan), `docs`, `infra` dan `.github`.
 - Alur perubahan: issue → feature branch → Pull Request → CI + review → staging → UAT → persetujuan rilis → deployment produksi.
 - CI: formatting, lint, typecheck, unit test, integration tests, Flutter analyze/test, security/dependency/secret scanning, dan kontrol policy yang bisa diotomasi. Workflow tidak boleh mendistribusikan secrets pada PR yang tidak dipercaya.
