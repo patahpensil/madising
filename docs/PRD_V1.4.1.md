@@ -9,7 +9,7 @@
 | Vendor pengembang dan pemelihara | **Patah Pensil** (vendor eksternal pembuat dan pemelihara aplikasi; bukan pemilik MADISING, bukan Admin, bukan pemberi layanan kesehatan; akses teknis terpisah dari akses klinis/operasional) |
 | Dokumen | PRD V1.4.1 — rancang implementasi, **untuk tinjauan dan persetujuan** |
 | Tanggal | 6 November 2026 |
-| Referensi pengalaman pengguna | `MADISING_UIUX_Prototype_V1.3.7_Katalog_9_Layanan_Sidrap.html` |
+| Referensi pengalaman pengguna | `docs/reference/MADISING_UIUX_Prototype_V1.3.7.html` |
 | Baseline persyaratan terkunci | PRD V1.3.6: SIDRAP-LOCK, STAFF-LOCK, ACCOUNT-LOCK, ROLE-LOCK, GOVERNANCE-LOCK, IDENTITY-LOCK |
 | Cakupan geografis pilot | Kabupaten Sidenreng Rappang (Sidrap), Sulawesi Selatan |
 | Kanal utama | Flutter Android/iOS untuk pasien dan perawat; mobile/PWA untuk kurir; web responsif untuk dokter, apotek, dan Admin/Owner |
@@ -124,7 +124,7 @@ Legenda: `Y` diperbolehkan dengan scope; `L` terbatas metadata/status; `—` dil
 | Resource/Aksi | PAT | NRS | DOC | PHA | CUR | ADM/OWN | VEN |
 |---|---|---|---|---|---|---|---|
 | Buat booking sendiri/kuasa sah | Y | — | — | — | — | L | — |
-| Kelola booking/dispatch | L | L (sendiri) | L | — | — | Y | — |
+| Kelola booking/dispatch | L | L (sendiri) | L | — | — | Y (operasional; CCO¹ terbatas) | — |
 | Asesmen & dokumentasi perawatan | L sesuai hak | Y (ditugaskan) | Y (relasi sah) | — | — | — | — |
 | Diagnosis/instruksi/resep | L sesuai hak | L (instruksi) | Y (dokter berwenang) | L (resep dialokasikan) | — | — | — |
 | Order apotek | L | — | L | Y (mitra terkait) | L (logistik) | L | — |
@@ -132,6 +132,8 @@ Legenda: `Y` diperbolehkan dengan scope; `L` terbatas metadata/status; `—` dil
 | Credentialing SDM/mitra | — | L (diri sendiri) | L (diri sendiri) | L (mitra) | L (diri) | Y | — |
 | Ringkasan dan tagihan | L (milik) | — | — | L (terkait) | L (terkait) | Y | — |
 | Infrastruktur/CI/CD/backup | — | — | — | — | — | L (approval) | Y (scope teknis) |
+
+**¹ Catatan scope CCO pada kolom ADM/OWN:** khusus **Admin ber-role `ADM` yang diberi scope `CCO` oleh Owner**, penilaian kelayakan klinis awal di `ADMIN_REVIEW` boleh membaca data triase/keluhan **minimum yang diperlukan**, dengan audit. Scope ini **bukan akses diagnosis, resep atau RME** dan **belum diimplementasikan**. Kolom ADM/OWN untuk **Asesmen & dokumentasi perawatan** dan **Diagnosis/instruksi/resep** tetap `—`; konteks `OWN` tidak otomatis memperoleh scope CCO.
 
 Rincian izin per endpoint diterbitkan sebagai lampiran `AUTHZ_MATRIX` sebelum implementasi API klinis. Tidak ada izin wildcard untuk PHI.
 
@@ -203,6 +205,12 @@ Pelamar fisioterapis/bidan/terapis/laboratorium/caregiver tidak ditambahkan seba
 - Tenaga klinis: `CANDIDATE → DOC_CHECKED → CLINICAL_CHECKED → OWNER_APPROVED → INVITED → ACTIVE → SUSPENDED/REVOKED`.
 - Apotek: `PARTNER_DRAFT → LEGAL_CHECKED → APPROVED → INVITED → ACTIVE → SUSPENDED/TERMINATED`.
 - Vendor/Admin: diundang oleh jalur nonpublik, dapat dinonaktifkan dan seluruh sesi/token terkait dicabut.
+
+**Padanan istilah historis V1.3.6 (bukan status kanonik baru):** `DOCUMENT_REVIEW` / `DOCUMENT_VERIFIED` → `DOC_CHECKED`; `CLINICAL_REVIEW` / `CLINICALLY_CLEARED` → `CLINICAL_CHECKED`; `LEGAL_VERIFIED` → `LEGAL_CHECKED`. Penamaan kanonik tetap sebagaimana dua baris tenaga klinis dan apotek di atas serta model data yang sudah disiapkan.
+
+**Cabang STAFF-LOCK V1.3.6 §2B yang wajib dipertahankan:** `REJECTED`, `ON_HOLD`, `EXPIRED`, `OFFBOARDED`. Semuanya **tidak dapat mengambil tugas**. Dokumen rusak/ambigu atau SIP tidak cocok harus diproses ke `ON_HOLD`, bukan lolos otomatis. Hubungan cabang ini dengan status utama, revokasi sesi dan evaluasi tugas aktif harus ditangani pada implementasi identitas.
+
+**Batas implementasi:** Cabang ini belum dimodelkan sebagai lifecycle klinis lengkap di migrasi `001_identity_authz.sql`; perbaikannya dikerjakan pada **branch identitas (PR #3)**, bukan PR dokumentasi ini. Secara spesifik, `REJECTED` sudah tersedia pada `accounts.state` dan `EXPIRED` pada `role_bindings.credential_state`, sedangkan `ON_HOLD` dan `OFFBOARDED` belum tercantum sebagai status. Tidak boleh mengklaim keempat cabang sudah aktif sebagai alur perekrutan.
 
 Payload signup publik yang memuat `role=doctor/nurse/pharmacy/admin/vendor` ditolak, sekalipun UI memanipulasi parameter. Tidak diperkenankan menetapkan kewenangan dari token client tanpa verifikasi keadaan akun dan tugas di server.
 
@@ -674,6 +682,8 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 | **V1.4.1 — status booking** | Status `REQUESTED` dan definisi slot belum lengkap | Penamaan `REQUESTED`, `CONFIRMED` dengan kapasitas dicadangkan, `ASSIGNED` atomik, pembayaran tetap OPEN-07 |
 | **V1.4.1 — verifikasi/keputusan terbuka** | UAT-01..30, OPEN-01..12 | UAT-31..33 dan OPEN-13..18 ditambahkan; keputusan R0 tidak diasumsikan selesai |
 | **V1.4.1 — klasifikasi rekam medis** | RME existing sebagai rujukan | Gerbang OPEN-04 memastikan status catatan klinis dan kewajiban RME sebelum skema `clinical_adapter` final |
+| **V1.4.1 — GOV-03 & GOV-07 (CR)** | GOV-03 memperbolehkan penunjukan Vendor sebagai Admin; GOV-07 menyatukan kendali infrastruktur/kode | Vendor tidak menjadi Admin; repo/kode milik Patah Pensil sebagai pembuat; data produksi dan backup dikendalikan MADISING; hosting/DNS/serah terima OPEN-09 dan kontrak |
+| **V1.4.1 — traceability** | Ketentuan dan uji rinci V1.3.6 | ROLE-LOCK di §2.1, pemetaan §21.1, nama status rekrutmen kanonik dan cabang STAFF-LOCK dipulihkan; persyaratan belum dimigrasi tetap berlaku melalui arsip |
 
 ## 21.1 Pemetaan ketentuan V1.3.6 → V1.4.1
 
@@ -793,7 +803,7 @@ Admin operasional bukan penanda tangan PRD; fungsi Admin dijalankan berdasarkan 
 **Dokumen internal:**
 
 - `MADISING_PRD_V1.3.6_Registrasi_Dashboard_Terkunci.md` — dasar ketentuan terkunci.
-- `MADISING_UIUX_Prototype_V1.3.7_Katalog_9_Layanan_Sidrap.html` — referensi pengalaman pengguna terbaru.
+- `docs/reference/MADISING_UIUX_Prototype_V1.3.7.html` — referensi pengalaman pengguna terbaru.
 - `MADISING_Addendum_Katalog_Layanan_V1.3.7.md` — sembilan layanan dan gate profesi.
 
 **Sumber resmi/standar, diperiksa 6 November 2026:**
@@ -808,4 +818,4 @@ Admin operasional bukan penanda tangan PRD; fungsi Admin dijalankan berdasarkan 
 
 ---
 
-**Akhir PRD V1.4.0 — Untuk Tinjauan Pemilik.**
+**Akhir PRD V1.4.1 — Untuk Tinjauan Pemilik.**

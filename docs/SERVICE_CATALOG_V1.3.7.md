@@ -24,7 +24,7 @@ Katalog layanan ditambahkan atas instruksi Pemilik dari referensi sembilan kateg
 - Booking tetap hanya menerima **tujuan kunjungan Sidrap**; tanda gawat darurat diarahkan ke layanan darurat, bukan booking rutin.
 - Harga, jadwal dan status aktif harus dikelola sistem, bukan diklaim berdasarkan prototipe.
 - File data tersedia dalam `apps/api/resources/services.json`. Tidak ada endpoint produksi; registrasi atau rekam medis belum diimplementasikan.
-- Rancangan visual terbaru: `MADISING_UIUX_Prototype_V1.3.7_Katalog_9_Layanan_Sidrap.html` (prototipe HTML terpisah, belum deploy).
+- Rancangan visual terbaru: `docs/reference/MADISING_UIUX_Prototype_V1.3.7.html` (prototipe HTML terpisah, belum deploy).
 
 ## Pekerjaan yang harus diuji saat implementasi
 
