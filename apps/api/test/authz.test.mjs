@@ -180,3 +180,18 @@ test('role binding cannot cross account kind and unverified contact cannot book'
   }), true);
   assert.deepEqual(allowedDashboards(make('DOC', { credentialValidUntil: null })), []);
 });
+
+
+test('a verified pharmacy tenant cannot unlock a second expired tenant', () => {
+  const pharmacy = make('PHA', { tenantId: 'pharmacy-active' });
+  pharmacy.bindings.push({
+    role: 'PHA', state: 'ACTIVE', credentialState: 'VERIFIED',
+    credentialValidUntil: '2020-01-01T00:00:00Z', tenantId: 'pharmacy-expired',
+  });
+  assert.equal(authorizeAction(pharmacy, 'pharmacy.order.read', {
+    tenantId: 'pharmacy-active',
+  }), true);
+  assert.equal(authorizeAction(pharmacy, 'pharmacy.order.read', {
+    tenantId: 'pharmacy-expired',
+  }), false);
+});
