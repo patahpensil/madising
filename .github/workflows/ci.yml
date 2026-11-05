@@ -61,3 +61,61 @@ jobs:
           grep -q 'ACCOUNT-LOCK' docs/DECISIONS.md
           grep -q 'STAFF-LOCK' docs/DECISIONS.md
           grep -q 'VENDOR-MAINTENANCE' docs/DECISIONS.md
+
+
+  database-migration:
+    name: PostgreSQL identity schema and constraints
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: madising_ci
+          POSTGRES_PASSWORD: synthetic-test-only
+          POSTGRES_DB: madising_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U madising_ci -d madising_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGPASSWORD: synthetic-test-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client if unavailable
+        shell: bash
+        run: |
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y postgresql-client
+          fi
+      - name: Apply migration (synthetic CI database only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -h 127.0.0.1 -U madising_ci -d madising_ci \
+            -v ON_ERROR_STOP=1 -f infra/postgres/migrations/001_identity_authz.sql
+          psql -X -h 127.0.0.1 -U madising_ci -d madising_ci \
+            -v ON_ERROR_STOP=1 -f infra/postgres/migrations/001_identity_authz.sql
+      - name: Verify database negative security constraints
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -h 127.0.0.1 -U madising_ci -d madising_ci \
+            -v ON_ERROR_STOP=1 -f infra/postgres/tests/001_identity_authz_smoke.sql
+
+  repository-hygiene:
+    name: Reject tracked credentials and patient exports
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect tracked file paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -E '(^|/)(secrets|patient-exports|clinical-uploads)(/|$)|(^|/)\.env($|[./])|\.(pem|p8|key|keystore|jks)$'; then
+            echo 'Forbidden secret or clinical-export path is tracked.'
+            exit 1
+          fi
