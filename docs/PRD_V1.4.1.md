@@ -221,7 +221,7 @@ Payload signup publik yang memuat `role=doctor/nurse/pharmacy/admin/vendor` dito
 3. Isi keluhan/tujuan dan triase tanda bahaya. Jika red flag: jelaskan sistem **bukan layanan darurat**; hentikan booking rutin dan arahkan ke pertolongan darurat, sertakan tombol kontak yang sesuai tanpa janji layanan ambulans.
 4. Pilih alamat kunjungan Sidrap via GPS atau manual; server melakukan geofence dan verifikasi lokasi.
 5. Pilih preferensi jadwal; tampilkan biaya/komponen layanan yang valid, syarat layanan, dan consent pemrosesan/layanan yang tepat.
-6. Server buat `BOOKING_REQUESTED`; untuk layanan khusus ke `ADMIN_REVIEW`; untuk alur perawat ke `ELIGIBILITY_CHECK`.
+6. Server buat `REQUESTED`; untuk layanan khusus ke `ADMIN_REVIEW`; untuk alur perawat ke `ELIGIBILITY_CHECK`.
 7. Sistem menampilkan nomor booking dan status nyata. Tidak ada pesan “petugas ditugaskan” sebelum assignment backend berhasil.
 8. Pasien menerima konfirmasi, update berjenjang, pembatalan/reschedule menurut ketentuan dan bukti pembayaran bila diproses.
 
@@ -271,6 +271,10 @@ Pada `ADMIN_REVIEW`, Admin menangani aspek administratif dan, **bila diberikan s
 
 Status terminal/alternatif: `REJECTED_OUT_OF_AREA`, `REJECTED_SERVICE_UNAVAILABLE`, `CANCELLED_BY_PATIENT`, `CANCELLED_BY_ADMIN`, `ESCALATED_EMERGENCY`, `NO_SHOW`, `FAILED`, `RESCHEDULE_REQUESTED`. Transisi hanya ditentukan backend sesuai izin dan precondition; semua perubahan status memiliki event log.
 
+- **`CONFIRMED`** berarti layanan berstatus `ACTIVE`, lokasi disetujui, serta slot jadwal dan kapasitas tenaga **eligible telah dicadangkan oleh backend**; belum berarti seorang petugas tertentu sudah menerima penugasan final.
+- **`ASSIGNED`** berarti penugasan final dilakukan secara **atomik** kepada satu tenaga yang memenuhi persyaratan; baru pada status ini identitas petugas dapat ditampilkan kepada pasien.
+- **Pembayaran:** titik penagihan/pembayaran kunjungan belum ditetapkan (**OPEN-07**). Sampai keputusan tersebut tersedia, **tidak ada transisi booking yang bergantung pada status pembayaran**.
+
 ## 8.2 Klinis dan integrasi
 
 - Consent: `NOT_REQUESTED → REQUESTED → ACCEPTED/DECLINED/REVOKED` (pencabutan menurut kebijakan dan kewajiban pencatatan).
@@ -294,7 +298,7 @@ Sistem menerapkan transactional outbox atau mekanisme andal setara, retry berbat
 | PAT-03 | Detail layanan | Deskripsi, indikasi umum, prasyarat, jenis tenaga, status, harga jika disetujui. |
 | PAT-04 | Booking & triase | Tanda bahaya memicu penghentian booking rutin; hasil triase tercatat. |
 | PAT-05 | Lokasi Sidrap | Validasi backend; kasus ambigu ditahan untuk pemeriksaan. |
-| PAT-06 | Jadwal dan ketersediaan | Konfirmasi tidak muncul sebelum tenaga dan kapasitas disetujui. |
+| PAT-06 | Jadwal dan ketersediaan | Konfirmasi tidak muncul sebelum slot dan kapasitas tenaga eligible dicadangkan backend; nama petugas tampil hanya setelah `ASSIGNED`. |
 | PAT-07 | Status/timeline | Menampilkan hanya status nyata pada server, tanpa menebak ETA. |
 | PAT-08 | Consent dan ringkasan | Persetujuan per tindakan/dokumentasi; riwayat yang boleh diakses. |
 | PAT-09 | Resep, obat, dan tagihan | Hanya milik sendiri/kuasa sah; detail harga dan status transaksi jelas. |
