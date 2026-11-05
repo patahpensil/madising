@@ -25,6 +25,15 @@ Referensi produk: [PRD V1.4.1](PRD_V1.4.1.md) dan prototipe V1.3.7.
 
 Vendor \`VEN\` bukan dashboard ketujuh. Endpoint \`/api/v1/vendor/status\` hanya metadata teknis tersanitasi.
 
+## Klarifikasi pemisahan tiga pihak (V1.4.1)
+
+- Owner adalah dokter/PJ Klinis; konteks `OWN` (dan `ADM` bila dipakai) harus menggunakan akun berjenis `INTERNAL` yang **terpisah** dari akun `CLINICIAN` untuk role `DOC`. Hanya akun DOC dengan relasi perawatan sah dapat menggunakan hak klinis.
+- Admin harian adalah **satu akun `INTERNAL` role `ADM`**, dipegang tenaga medis yang ditunjuk Owner. Admin tidak otomatis mendapatkan akses PHI melalui role ADM.
+- `ROLE_ACCOUNT_KIND` di `apps/api/src/authz.mjs` saat ini **menolak izin runtime** jika account kind `INTERNAL` mencoba binding `DOC`. **Batas aktual:** migrasi SQL belum menegakkan mapping account-kind ke role lintas tabel; perlu kontrol database/provisioning dan tes saat implementasi, **tanpa mengubah kode dalam PR dokumentasi ini**.
+- Scope `CCO` pada Admin **belum diimplementasikan**. Owner dapat memberi scope tersebut nanti setelah perancangan dan pengujian; untuk sekarang Admin tanpa CCO tidak berhak mengambil keputusan kelayakan klinis awal atau mengakses PHI bebas.
+- Vendor Patah Pensil adalah pihak eksternal: akun `VENDOR`/`VEN`, tanpa role `ADM/OWN`, tanpa akses PHI default. Deployment, restore, JIT dan rotasi kredensial produksi membutuhkan persetujuan Owner dan audit.
+
+
 ## Matriks izin teruji (fungsi murni)
 
 | Action | PAT | NRS | DOC | PHA | CUR | ADM/OWN | VEN |

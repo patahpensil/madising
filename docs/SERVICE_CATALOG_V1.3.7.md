@@ -29,7 +29,7 @@ Katalog layanan ditambahkan atas instruksi Pemilik dari referensi sembilan kateg
 ## Pekerjaan yang harus diuji saat implementasi
 
 1. RBAC/ABAC pada semua layanan dan assignment.
-2. Status ketersediaan tenaga/mitra `draft → verified → active → suspended`.
+2. Siklus status layanan: `DRAFT → VERIFIED → ACTIVE ↔ SUSPENDED → RETIRED`. Transisi ke `VERIFIED` maupun `ACTIVE` memerlukan sign-off **Owner sebagai Dokter PJ Klinis**; Admin tidak dapat mengaktifkan layanan secara mandiri. Kesiapan tenaga/mitra diperiksa terpisah.
 3. Triage dan verifikasi dokter bila suatu tindakan memerlukannya.
 4. Penerusan permintaan spesialis ke Admin untuk penugasan sesuai kompetensi.
 5. Otorisasi akses data yang minimum untuk apotek, laboratorium, caregiver, kurir.

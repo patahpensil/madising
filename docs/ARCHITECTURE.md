@@ -2,9 +2,9 @@
 
 ## Approach
 
-A modular monolith is the intended target: Flutter on Android/iOS, web in Next.js, API in NestJS, PostgreSQL/PostGIS, private clinical media storage, and integration adapters for existing RME, pharmacy and courier. Specific cloud provider, capacity, and release contracts are **not yet approved**.
+Rancangan awal berupa modular monolith: Flutter Android/iOS, web responsif, API modular, PostgreSQL/PostGIS, private clinical media storage dan adapter RME/apotek/kurir. **Pemilihan NestJS + Next.js versus mempertahankan Node tanpa framework masih OPEN-13**, belum diputuskan. Penyedia cloud, kapasitas, serta kontrak rilis juga belum disetujui.
 
-This commit provides only a dependency-free Node.js health service, static web foundation, Flutter starter, and CI. It does NOT implement NestJS/Next.js, identity, RME integration, or production data services.
+Baseline kode saat ini menggunakan **Node `.mjs` tanpa framework** untuk API healthcheck, policy otorisasi awal dan adapter lookup identitas PostgreSQL; frontend web masih statis dan Flutter masih skeleton. Verifikasi OIDC runtime, signup/undangan nyata, NestJS/Next.js, RME integration dan layanan produksi belum aktif. Baseline `.mjs` akan di-port atau dipertahankan **hanya setelah keputusan OPEN-13**; jangan menyatakan salah satunya sudah disahkan.
 
 ## Logical modules (planned)
 

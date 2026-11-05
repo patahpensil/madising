@@ -2,7 +2,7 @@
 
 **Secure integrated homecare platform** — developed and maintained by **Patah Pensil**.
 
-Private repository for the **Sidrap pilot**. The project aims for six segregated dashboards: Patient, Nurse, Doctor, Pharmacy, Courier, and Admin/Owner. Vendor maintenance is separate from operational/clinical access.
+Private repository for the **Sidrap pilot**. The project aims for six segregated dashboards: Patient, Nurse, Doctor, Pharmacy, Courier, and Admin/Owner. **Three distinct parties**: MADISING Owner (doctor and clinical lead), one designated medical-personnel Admin for daily operations, and **Patah Pensil as external technical Vendor**. Clinical DOC identity for the Owner is separate from OWN/ADM; Vendor cannot approve its own production actions or routinely access patient records.
 
 ## Status
 
@@ -33,6 +33,6 @@ Feature branch → pull request → automated checks → review → approved mer
 
 ## Product specification
 
-The **proposed master PRD V1.4.1** is available at [docs/PRD_V1.4.1.md](docs/PRD_V1.4.1.md), restructured from the [V1.3.7 interactive prototype](docs/reference/MADISING_UIUX_Prototype_V1.3.7.html) and its [service catalogue addendum](docs/reference/MADISING_Addendum_Katalog_Layanan_V1.3.7.md). **Pending owner/clinical/security approval**, the V1.3.6 locked requirements remain binding; see [docs/DECISIONS.md](docs/DECISIONS.md).
+The **proposed master PRD V1.4.1** is available at [docs/PRD_V1.4.1.md](docs/PRD_V1.4.1.md), restructured from the [V1.3.7 interactive prototype](docs/reference/MADISING_UIUX_Prototype_V1.3.7.html) and its [service catalogue addendum](docs/reference/MADISING_Addendum_Katalog_Layanan_V1.3.7.md). **Proposed master, pending OPEN-12 approval by Owner as Owner and clinical lead**. Until approved, the unchanged V1.3.6 LOCK requirements remain binding and are consolidated in §2.1 of V1.4.1; see [docs/DECISIONS.md](docs/DECISIONS.md).
 
 See [architecture](docs/ARCHITECTURE.md), [security](docs/SECURITY.md), and [roadmap](docs/ROADMAP.md).
