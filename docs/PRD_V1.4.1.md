@@ -702,7 +702,7 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 
 Pemetaan berikut disusun **dari ID dan teks yang benar-benar tercantum** dalam [arsip PRD V1.3.6](reference/MADISING_PRD_V1.3.6_Registrasi_Dashboard_Terkunci.md). Tanda **Dipindahkan** dipakai hanya untuk ketentuan dengan padanan substantif di V1.4.1; **Diubah (CR)** memerlukan penyelesaian OPEN-12 untuk dampak klinis/data atau perubahan ketentuan historis, bukan persetujuan Owner atas detail JSON/CI/CD; **Tetap berlaku dari V1.3.6** berarti persyaratan rinci dalam arsip belum dinyatakan tergantikan atau belum memiliki padanan identik. Kolom lokasi menunjukkan padanan utama atau lokasi detail yang masih dipertahankan, **bukan** klaim bahwa kode sudah mengimplementasikannya.
 
-**Cakupan terhitung:** GOV 7, MAINT 11, ACC 16, ACC-T 18, STAFF-T 14, GOV-T 4 (**70 ID wajib**); ditambah STAFF-01..10 (10 hard gate) dan MAINT-T01..12 (12 skenario maintenance), sehingga **92 ID sumber** dipetakan. Penomoran lama dijaga untuk regression testing. GOV-03 dan GOV-07 menggantikan keputusan terdahulu **hanya setelah disetujui melalui OPEN-12**; ACC-11, ACC-T14, GOV-T03, dan aspek kepemilikan MAINT-11 ikut terdampak perubahan itu.
+**Cakupan terhitung:** GOV 7, MAINT 11, ACC 16, ACC-T 18, STAFF-T 14, GOV-T 4 (**70 ID wajib**); ditambah STAFF-01..10 (10 hard gate) dan MAINT-T01..12 (12 skenario maintenance), sehingga **92 ID sumber** dipetakan. Penomoran lama dijaga untuk regresi. GOV-03 dan GOV-07 merupakan change request yang belum menggantikan keputusan historis sampai OPEN-12 selesai; ACC-11, ACC-T14, GOV-T03 dan MAINT-11 terdampak. **CR-TECH-01** menandai tambahan perubahan otorisasi teknis pada GOV-06, MAINT-04/05/07/08, MAINT-T03/04/08; hak pengendali data, gerbang klinis, dan §12.4 tidak dihapus.
 
 | ID V1.3.6 | Ringkasan | Lokasi di V1.4.1 | Status |
 |---|---|---|---|
@@ -711,16 +711,16 @@ Pemetaan berikut disusun **dari ID dan teks yang benar-benar tercantum** dalam [
 | `GOV-03` | Vendor boleh bertugas sebagai Admin hanya setelah ditunjuk, dengan akun operasional terpisah | §3.2.1 (GOV-03 CR: Vendor tidak boleh menjadi Admin) | Diubah (CR) |
 | `GOV-04` | Owner/Admin tidak otomatis mendapat izin membuka catatan RME atau file klinis | §3.2.1; §3.3; §12.2 | Dipindahkan |
 | `GOV-05` | Verifikasi klinis dan pengesahan Owner terhadap akun perawat/dokter tetap berlaku (STAFF-LOCK) | §3.2.1; §6.1 | Dipindahkan |
-| `GOV-06` | Perubahan kebijakan hak akses, ekspor data besar, dan akses vendor ke produksi merupakan operasi berisiko tinggi | §3.2.1; §12.4 (detail tambahan tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `GOV-06` | Perubahan kebijakan hak akses, ekspor data besar, dan akses vendor ke produksi merupakan operasi berisiko tinggi | §3.2.1 CR-TECH-01; §12.4 tetap; kontrol perubahan/akses PHI wajib diuji | Diubah (CR) |
 | `GOV-07` | Kepemilikan infrastruktur dan hak administratif tertinggi berada pada entitas pengelola MADISING atau pihak yang sah ditunjuknya | §3.2.1 (GOV-07 CR: kode Vendor, data MADISING); §13.1 | Diubah (CR) |
 | `MAINT-01` | Health monitoring | §9.7 VEN-01, VEN-03 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
 | `MAINT-02` | Diagnosis error & troubleshooting | §9.7 VEN-02, VEN-11 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
 | `MAINT-03` | Bug fix & perubahan kode | §13.1; §9.7 VEN-09 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
-| `MAINT-04` | Pembaruan dan deployment | §9.7 VEN-04, VEN-05; §13.1 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
-| `MAINT-05` | Backup & pemulihan | §9.7 VEN-06, VEN-07; §12.3 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-04` | Pembaruan dan deployment | §9.7 VEN-04/VEN-05; §13.1 CR-TECH-01 (approval teknis Vendor) | Diubah (CR) |
+| `MAINT-05` | Backup & pemulihan | §9.7 VEN-06/VEN-07; §10.2 dan §13.1 (restore teknis vs otorisasi data) | Diubah (CR) |
 | `MAINT-06` | Pengujian integrasi eksternal | §9.7 VEN-03, VEN-10 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
-| `MAINT-07` | Manajemen keamanan teknis | §9.7 VEN-09; §13.1 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
-| `MAINT-08` | Akses darurat terkendali | §9.7 VEN-08; §3.2.1 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
+| `MAINT-07` | Manajemen keamanan teknis | §9.7 VEN-09; §13.1 (rotasi teknis Vendor; data tetap terkontrol) | Diubah (CR) |
+| `MAINT-08` | Akses darurat terkendali | §9.7 VEN-08; §3.2.1 CR-TECH-01; §12.4 tidak berubah | Diubah (CR) |
 | `MAINT-09` | Kinerja dan kapasitas | §9.7 VEN-01 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
 | `MAINT-10` | Penanganan insiden dan continuity | §9.7 VEN-11 (rincian tetap pada arsip) | Tetap berlaku dari V1.3.6 |
 | `MAINT-11` | Serah terima & terminasi vendor | §3.2.1 (GOV-07 CR); §9.7 VEN-12 (kewajiban offboarding tetap) | Diubah (CR) |
@@ -788,12 +788,12 @@ Pemetaan berikut disusun **dari ID dan teks yang benar-benar tercantum** dalam [
 | `GOV-T04` | Owner/Admin mencoba meloloskan kandidat tanpa validasi klinis independen | §3.2.1 (uji kelayakan klinis tetap berlaku) | Tetap berlaku dari V1.3.6 |
 | `MAINT-T01` | Sistem API gagal / antrean webhook berhenti | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
 | `MAINT-T02` | Error log mengandung data klinis dan token uji | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
-| `MAINT-T03` | Vendor meminta akses privileged produksi | §17.1 UAT-31; §9.7 VEN-08 (rincian lama tetap) | Tetap berlaku dari V1.3.6 |
-| `MAINT-T04` | Vendor mencoba deploy perubahan kritis tanpa persetujuan | §17.1 UAT-31 | Dipindahkan |
+| `MAINT-T03` | Vendor meminta akses privileged produksi | §17.1 UAT-31; §9.7 VEN-08; perubahan approval teknis pending | Diubah (CR) |
+| `MAINT-T04` | Vendor mencoba deploy perubahan kritis tanpa persetujuan | §17.1 UAT-31; deployment tanpa gerbang teknis tetap ditolak | Diubah (CR) |
 | `MAINT-T05` | Pengelola menyetujui release yang lulus uji | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
 | `MAINT-T06` | Simulasi backup gagal | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
 | `MAINT-T07` | Uji restore pada lingkungan terisolasi | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
-| `MAINT-T08` | Vendor meminta restore produksi tanpa approval terpisah | §17.1 UAT-31 | Dipindahkan |
+| `MAINT-T08` | Vendor meminta restore produksi tanpa approval terpisah | §17.1 UAT-31; restore teknis dengan kontrol, PHI tetap membutuhkan otorisasi sah | Diubah (CR) |
 | `MAINT-T09` | Vendor mencoba menghapus audit aktivitasnya sendiri | §12.4 (rincian lama tetap berlaku) | Tetap berlaku dari V1.3.6 |
 | `MAINT-T10` | Owner mencabut akses vendor saat kontrak selesai | §9.7 VEN-12 (rincian lama tetap berlaku) | Tetap berlaku dari V1.3.6 |
 | `MAINT-T11` | Hotfix darurat terjadi ketika otorisator tidak tersedia | —; detail masih pada arsip V1.3.6 §12A | Tetap berlaku dari V1.3.6 |
