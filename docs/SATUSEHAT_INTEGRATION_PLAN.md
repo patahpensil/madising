@@ -17,10 +17,25 @@ MADISING/PJ Klinis dan pihak fasyankes memutuskan jenis pelayanan, pihak yang be
 
 **Catatan resmi:** SATUSEHAT membedakan pendaftaran fasyankes dan pendaftaran penyedia sistem RME/partner. Kode akses API Production diberikan menurut mekanisme fasyankes yang berwenang; partner terverifikasi tidak otomatis mempunyai kode Production sendiri. Fasyankes dapat mengatur pemberian/penghentian akses partner. Referensi: [Registrasi](https://satusehat.kemkes.go.id/platform/docs/id/registration-guide/), [Fasyankes](https://satusehat.kemkes.go.id/platform/docs/id/registration-guide/regis-institution/), [Kode akses](https://satusehat.kemkes.go.id/platform/docs/id/api-code/).
 
+### Hasil verifikasi sumber primer — 6 November 2026
+
+**Telah dipastikan dari dokumentasi publik resmi Kemenkes, bukan dari akun MADISING:**
+
+- Untuk fasyankes, jalur Production memerlukan pemutakhiran sistem RME dan kontak SATUSEHAT melalui **DFO/REGFASYANKES/RS Online** sesuai kategori. RME vendor/mandiri harus telah terverifikasi. Fasyankes menguasai otorisasi kode akses Production; partner system tidak otomatis mempunyai kredensial Production sendiri. [Fasyankes](https://satusehat.kemkes.go.id/platform/docs/id/registration-guide/regis-institution/), [Production](https://satusehat.kemkes.go.id/platform/docs/id/api-code/access-production/).
+- Akun developer/partner yang memiliki **kredensial Sandbox yang sah** dapat mencoba transaksi; status partner belum terverifikasi tidak otomatis menghalangi workshop di Sandbox. Ini bukan bukti tersedia akses Sandbox pada akun Patah Pensil. [Sandbox](https://satusehat.kemkes.go.id/platform/docs/id/api-code/access-sandbox/).
+- **Bila Patah Pensil hendak mendaftarkan sistem RME sendiri sebagai partner system**, panduan saat ini menyatakan prasyarat: **nomor PSE**, **afiliasi SNOMED CT**, **bukti Sandbox respons 200/201 sampai Encounter dan Condition**, screenshot dan rekaman layar, dokumen sistem RME, surat tugas/kuasa dan persyaratan administrasi lain, serta survei keamanan. Tidak satu pun bukti tersebut dinyatakan sudah tersedia untuk MADISING. [Registrasi sistem RME](https://satusehat.kemkes.go.id/platform/docs/id/registration-guide/regis-vendor/).
+- URL OAuth dan FHIR R4 Sandbox/Production telah dipublikasikan, dan resource **Encounter** serta **Condition** memiliki kontrak REST resmi. **Kecocokan use case spesifik kunjungan homecare dan sembilan layanan MADISING masih perlu divalidasi**, tidak otomatis sama dengan modul rawat jalan. [Endpoint](https://satusehat.kemkes.go.id/platform/docs/id/postman-workshop/endpoint-information/), [Rawat jalan](https://satusehat.kemkes.go.id/platform/docs/id/interoperability/rme-rawat-jalan/).
+
+**Batas bukti:** nama fasilitas, produk/vendor RME existing, status verifikasi, kode fasyankes/Organization ID dan akun SSP MADISING belum tersedia dalam artefak proyek. Tidak ada akses authenticated SSP, request API ber-token, test Sandbox 200/201, ataupun tes Production yang telah dilakukan. **Status:** persyaratan publik VERIFIED; **jalur operasional MADISING belum VERIFIED**. Rincian: [laporan verifikasi](SATUSEHAT_VERIFIKASI_2026-11-06.md).
+
+
 ## 3. Checklist teknis R0 — dilakukan Patah Pensil
 
 - [ ] Identifikasi penyelenggara/fasyankes resmi, PIC yang berwenang, Organization ID **hanya bila sudah diterbitkan**, RME yang digunakan dan pemilik proses RME (dengan data identitas fasilitas dari pihak berwenang, bukan asumsi).
 - [ ] Periksa jalur pendaftaran dan status SATUSEHAT partner/fasyankes, hak akses lingkungan Sandbox serta prasyarat Production.
+- [ ] Jika memilih jalur partner system baru: cek bukti **nomor PSE**, **nomor afiliasi SNOMED CT**, dokumen RME, surat tugas/kuasa, survei keamanan, serta uji respons 200/201 pada `Encounter` dan `Condition` di Sandbox; bukti tidak dapat diganti simulasi mock.
+- [ ] Tentukan apakah tiap tindakan homecare bisa mengikuti playbook resmi yang ada; tidak menganggap pemetaan rawat jalan otomatis berlaku untuk kunjungan rumah.
+
 - [ ] Verifikasi apakah RME existing memiliki API/prosedur bridging sah; minta daftar operasi yang benar-benar tersedia dan kontrak interoperabilitasnya.
 - [ ] Tentukan jalur A atau B berdasarkan hasil verifikasi; bila keduanya belum memenuhi syarat, status integrasi `BLOCKED_EXTERNAL_DEPENDENCY`, tidak boleh diklaim `CONNECTED`.
 - [ ] Petakan use case yang memang tersedia untuk pelayanan homecare; identifikasi resource FHIR relevan (misalnya `Patient`, `Encounter`) **hanya jika dokumentasi dan hak akses mendukung**.
