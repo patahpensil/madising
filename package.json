@@ -1,0 +1,14 @@
+{
+  "name": "madising-foundation",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Initial nonclinical monorepo foundation",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "api": "node apps/api/src/server.mjs",
+    "test": "node --test apps/api/test/*.test.mjs",
+    "check:syntax": "node --check apps/api/src/server.mjs"
+  }
+}

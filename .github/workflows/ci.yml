@@ -1,0 +1,63 @@
+name: MADISING CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'chore/**'
+      - 'feature/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node-tests:
+    name: Foundation API tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify syntax
+        run: npm run check:syntax
+      - name: Run API tests
+        run: npm test
+
+  flutter-check:
+    name: Flutter static analysis and tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Run widget tests
+        run: flutter test
+
+  policy-check:
+    name: Locked requirements recorded
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify governance baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'SIDRAP-LOCK' docs/DECISIONS.md
+          grep -q 'ACCOUNT-LOCK' docs/DECISIONS.md
+          grep -q 'STAFF-LOCK' docs/DECISIONS.md
+          grep -q 'VENDOR-MAINTENANCE' docs/DECISIONS.md
