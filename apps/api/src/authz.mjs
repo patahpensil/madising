@@ -14,11 +14,18 @@ export const DASHBOARD_ROLES = Object.freeze({
 
 const PRIVILEGED = new Set(['DOC', 'ADM', 'OWN', 'VEN']);
 const CREDENTIALED = new Set(['NRS', 'DOC', 'PHA']);
+const ROLE_ACCOUNT_KIND = Object.freeze({
+  PAT: 'PATIENT', NRS: 'CLINICIAN', DOC: 'CLINICIAN', PHA: 'PHARMACY',
+  CUR: 'COURIER', ADM: 'INTERNAL', OWN: 'INTERNAL', VEN: 'VENDOR',
+});
 const VALID_STATES = new Set(['ACTIVE']);
 const COURIER_APPLICATION_STATES = new Set(['APPLIED', 'PENDING_REVIEW', 'NEEDS_CORRECTION']);
 
 function accountAllowsRole(actor, role, permitPendingCourier) {
   if (!actor?.account || !actor?.authn || !Array.isArray(actor.bindings)) return false;
+  if (actor.account.kind !== ROLE_ACCOUNT_KIND[role]) return false;
+  if ((role === 'PAT' || role === 'CUR') && actor.account.state === 'ACTIVE' &&
+      actor.account.contactVerified !== true) return false;
   if (actor.account.state === 'ACTIVE') return true;
   return role === 'CUR' && permitPendingCourier && COURIER_APPLICATION_STATES.has(actor.account.state);
 }
@@ -34,6 +41,7 @@ export function hasRole(actor, role, options = {}) {
     }
     if (binding.state !== 'ACTIVE' || actor.account.state !== 'ACTIVE') return false;
     if (CREDENTIALED.has(role) && binding.credentialState !== 'VERIFIED') return false;
+    if (CREDENTIALED.has(role) && !binding.credentialValidUntil) return false;
     if (role === 'CUR' && binding.credentialState !== 'VERIFIED') return false;
     if (binding.credentialValidUntil) {
       const expiry = Date.parse(binding.credentialValidUntil);
@@ -72,7 +80,8 @@ export function authorizeAction(actor, action, resource = null) {
       return (hasRole(actor, 'PAT') && resource.patientAccountId === actor.account.id) ||
         (hasRole(actor, 'NRS') && resource.assignedNurseAccountId === actor.account.id) ||
         (hasRole(actor, 'DOC') && resource.authorizedDoctorAccountId === actor.account.id) ||
-        hasRole(actor, 'ADM') || hasRole(actor, 'OWN');
+        ((hasRole(actor, 'ADM') || hasRole(actor, 'OWN')) &&
+          resource.dataClass === 'OPERATIONS');
     case 'clinical.read':
       return (hasRole(actor, 'NRS') && resource.assignedNurseAccountId === actor.account.id) ||
         (hasRole(actor, 'DOC') && resource.authorizedDoctorAccountId === actor.account.id);
