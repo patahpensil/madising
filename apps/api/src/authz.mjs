@@ -18,7 +18,6 @@ const ROLE_ACCOUNT_KIND = Object.freeze({
   PAT: 'PATIENT', NRS: 'CLINICIAN', DOC: 'CLINICIAN', PHA: 'PHARMACY',
   CUR: 'COURIER', ADM: 'INTERNAL', OWN: 'INTERNAL', VEN: 'VENDOR',
 });
-const VALID_STATES = new Set(['ACTIVE']);
 const COURIER_APPLICATION_STATES = new Set(['APPLIED', 'PENDING_REVIEW', 'NEEDS_CORRECTION']);
 
 function accountAllowsRole(actor, role, permitPendingCourier) {
@@ -92,7 +91,9 @@ export function authorizeAction(actor, action, resource = null) {
     case 'pharmacy.order.read':
       return hasRole(actor, 'PHA') &&
         actor.bindings.some((b) => b.role === 'PHA' && b.state === 'ACTIVE' &&
-          b.credentialState === 'VERIFIED' && b.tenantId && b.tenantId === resource.tenantId);
+          b.credentialState === 'VERIFIED' && b.tenantId && b.tenantId === resource.tenantId &&
+          b.credentialValidUntil && Number.isFinite(Date.parse(b.credentialValidUntil)) &&
+          Date.parse(b.credentialValidUntil) > Date.now());
     case 'delivery.task.read':
       return hasRole(actor, 'CUR') && resource.assignedCourierAccountId === actor.account.id;
     case 'operations.read':
