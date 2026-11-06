@@ -119,3 +119,12 @@ jobs:
             echo 'Forbidden secret or clinical-export path is tracked.'
             exit 1
           fi
+      - name: Detect recognizable credentials in tracked text
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This heuristic is defense in depth, not a substitute for dedicated scanning.
+          if git grep -I -n -E -e '-----BEGIN (RSA |EC |OPENSSH |)?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-Z]{16}|sk_live_[A-Za-z0-9]{16,}' -- .; then
+            echo 'Recognizable credential-like content is tracked.'
+            exit 1
+          fi
