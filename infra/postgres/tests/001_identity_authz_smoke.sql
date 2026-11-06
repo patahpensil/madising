@@ -18,6 +18,37 @@ BEGIN
     (account_id,role,state,credential_state)
   VALUES (aid,'PAT','ACTIVE','NOT_REQUIRED');
 
+  -- Doctor binding on a patient account was previously possible in SQL.
+  -- This must now fail independently from Node authorization.
+  blocked := false;
+  BEGIN
+    INSERT INTO madising.role_bindings
+      (account_id,role,state,credential_state,credential_valid_until,approved_by)
+    VALUES (aid,'DOC','ACTIVE','VERIFIED','2099-01-01',aid);
+  EXCEPTION WHEN check_violation THEN
+    blocked := true;
+  END;
+  IF NOT blocked THEN
+    RAISE EXCEPTION 'Patient account accepted a doctor role';
+  END IF;
+
+  -- Identity kinds cannot be silently rewritten after role provisioning.
+  blocked := false;
+  BEGIN
+    UPDATE madising.accounts SET kind='CLINICIAN' WHERE id=aid;
+  EXCEPTION WHEN check_violation THEN
+    blocked := true;
+  END;
+  IF NOT blocked THEN
+    RAISE EXCEPTION 'Account kind could be mutated';
+  END IF;
+
+  -- Legacy clinical on-hold/offboarding branches are represented as
+  -- non-active account states, not as grants of access.
+  UPDATE madising.accounts SET state='ON_HOLD' WHERE id=aid;
+  UPDATE madising.accounts SET state='OFFBOARDED' WHERE id=aid;
+  UPDATE madising.accounts SET state='ACTIVE' WHERE id=aid;
+
   blocked := false;
   BEGIN
     INSERT INTO madising.role_bindings
