@@ -168,6 +168,16 @@ test('HTTP blocks privileged dashboard without verified MFA', async () => {
 });
 
 
+test('on-hold and offboarded accounts never regain dashboard access', () => {
+  for (const state of ['ON_HOLD', 'OFFBOARDED', 'REJECTED', 'REVOKED', 'SUSPENDED']) {
+    assert.deepEqual(allowedDashboards(make('NRS', { state })), []);
+    assert.deepEqual(allowedDashboards(make('DOC', { state })), []);
+    assert.equal(authorizeAction(make('DOC', { state }), 'clinical.read', {
+      authorizedDoctorAccountId: 'actor-1',
+    }), false);
+  }
+});
+
 test('role binding cannot cross account kind and unverified contact cannot book', () => {
   assert.deepEqual(allowedDashboards(make('DOC', { kind: 'PATIENT' })), []);
   assert.deepEqual(allowedDashboards(make('PAT', { contactVerified: false })), []);
