@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS madising.accounts (
     ('UNVERIFIED','APPLIED','PENDING_REVIEW','NEEDS_CORRECTION',
      'CANDIDATE','DOC_CHECKED','CLINICAL_CHECKED','OWNER_APPROVED',
      'INVITED','PARTNER_DRAFT','LEGAL_CHECKED','APPROVED',
-     'ACTIVE','SUSPENDED','REJECTED','REVOKED','CLOSED','TERMINATED')),
+     'ACTIVE','SUSPENDED','REJECTED','REVOKED','CLOSED','TERMINATED',
+     'ON_HOLD','OFFBOARDED')),
   contact_verified boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
@@ -44,6 +45,60 @@ CREATE TABLE IF NOT EXISTS madising.role_bindings (
   ),
   CHECK (state <> 'ACTIVE' OR role IN ('PAT','CUR') OR approved_by IS NOT NULL)
 );
+-- Role-to-account-kind mapping is enforced at the database boundary as well
+-- as in the Node policy. Never accept a clinician role on a PATIENT account.
+CREATE OR REPLACE FUNCTION madising.enforce_role_account_kind()
+RETURNS trigger LANGUAGE plpgsql AS $
+DECLARE
+  actual_kind text;
+  expected_kind text;
+BEGIN
+  SELECT kind INTO actual_kind
+    FROM madising.accounts WHERE id = NEW.account_id FOR SHARE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Account does not exist' USING ERRCODE = '23503';
+  END IF;
+  expected_kind := CASE NEW.role
+    WHEN 'PAT' THEN 'PATIENT'
+    WHEN 'CUR' THEN 'COURIER'
+    WHEN 'NRS' THEN 'CLINICIAN'
+    WHEN 'DOC' THEN 'CLINICIAN'
+    WHEN 'PHA' THEN 'PHARMACY'
+    WHEN 'ADM' THEN 'INTERNAL'
+    WHEN 'OWN' THEN 'INTERNAL'
+    WHEN 'VEN' THEN 'VENDOR'
+    ELSE NULL
+  END;
+  IF expected_kind IS NULL OR actual_kind IS DISTINCT FROM expected_kind THEN
+    RAISE EXCEPTION 'Role is incompatible with account kind'
+      USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$;
+DROP TRIGGER IF EXISTS role_account_kind_guard ON madising.role_bindings;
+CREATE TRIGGER role_account_kind_guard
+  BEFORE INSERT OR UPDATE OF account_id, role
+  ON madising.role_bindings FOR EACH ROW
+  EXECUTE FUNCTION madising.enforce_role_account_kind();
+
+-- Account kind is immutable: migrating between identities requires a separate,
+-- reviewed workflow rather than silently inheriting existing role bindings.
+CREATE OR REPLACE FUNCTION madising.prevent_account_kind_change()
+RETURNS trigger LANGUAGE plpgsql AS $
+BEGIN
+  IF NEW.kind IS DISTINCT FROM OLD.kind THEN
+    RAISE EXCEPTION 'Account kind cannot be changed in place'
+      USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$;
+DROP TRIGGER IF EXISTS accounts_kind_immutable ON madising.accounts;
+CREATE TRIGGER accounts_kind_immutable BEFORE UPDATE OF kind
+  ON madising.accounts FOR EACH ROW
+  EXECUTE FUNCTION madising.prevent_account_kind_change();
+
 -- Note: A Postgres UNIQUE permits multiple NULL tenant_id values.
 -- Explicit unique index prevents duplicate tenantless role bindings.
 CREATE UNIQUE INDEX IF NOT EXISTS role_bindings_no_tenant_unique
