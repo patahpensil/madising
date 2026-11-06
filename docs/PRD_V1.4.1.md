@@ -210,7 +210,7 @@ Pelamar fisioterapis/bidan/terapis/laboratorium/caregiver tidak ditambahkan seba
 
 **Cabang STAFF-LOCK V1.3.6 §2B yang wajib dipertahankan:** `REJECTED`, `ON_HOLD`, `EXPIRED`, `OFFBOARDED`. Semuanya **tidak dapat mengambil tugas**. Dokumen rusak/ambigu atau SIP tidak cocok harus diproses ke `ON_HOLD`, bukan lolos otomatis. Hubungan cabang ini dengan status utama, revokasi sesi dan evaluasi tugas aktif harus ditangani pada implementasi identitas.
 
-**Batas implementasi:** Cabang ini belum dimodelkan sebagai lifecycle klinis lengkap di migrasi `001_identity_authz.sql`; perbaikannya dikerjakan pada **branch identitas (PR #3)**, bukan PR dokumentasi ini. Secara spesifik, `REJECTED` sudah tersedia pada `accounts.state` dan `EXPIRED` pada `role_bindings.credential_state`, sedangkan `ON_HOLD` dan `OFFBOARDED` belum tercantum sebagai status. Tidak boleh mengklaim keempat cabang sudah aktif sebagai alur perekrutan.
+**Batas implementasi:** Branch identitas (PR #3, masih Draft) telah menambahkan `ON_HOLD` dan `OFFBOARDED` ke `accounts.state` dalam migrasi `001_identity_authz.sql`; `REJECTED` sudah tersedia pada `accounts.state` dan `EXPIRED` pada `role_bindings.credential_state`. Penambahan status SQL **bukan** implementasi state machine rekrutmen lengkap: transisi, penilaian tugas aktif, revokasi sesi, dan pemeriksaan provisioning masih harus dibangun dan diuji. Perubahan PR #3 belum tergabung ke `main`, sehingga status ini belum boleh disebut aktif dalam produksi.
 
 Payload signup publik yang memuat `role=doctor/nurse/pharmacy/admin/vendor` ditolak, sekalipun UI memanipulasi parameter. Tidak diperkenankan menetapkan kewenangan dari token client tanpa verifikasi keadaan akun dan tugas di server.
 
