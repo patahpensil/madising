@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS madising.role_bindings (
 -- Role-to-account-kind mapping is enforced at the database boundary as well
 -- as in the Node policy. Never accept a clinician role on a PATIENT account.
 CREATE OR REPLACE FUNCTION madising.enforce_role_account_kind()
-RETURNS trigger LANGUAGE plpgsql AS $
+RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
   actual_kind text;
   expected_kind text;
@@ -75,7 +75,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 DROP TRIGGER IF EXISTS role_account_kind_guard ON madising.role_bindings;
 CREATE TRIGGER role_account_kind_guard
   BEFORE INSERT OR UPDATE OF account_id, role
@@ -85,7 +85,7 @@ CREATE TRIGGER role_account_kind_guard
 -- Account kind is immutable: migrating between identities requires a separate,
 -- reviewed workflow rather than silently inheriting existing role bindings.
 CREATE OR REPLACE FUNCTION madising.prevent_account_kind_change()
-RETURNS trigger LANGUAGE plpgsql AS $
+RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
   IF NEW.kind IS DISTINCT FROM OLD.kind THEN
     RAISE EXCEPTION 'Account kind cannot be changed in place'
@@ -93,7 +93,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 DROP TRIGGER IF EXISTS accounts_kind_immutable ON madising.accounts;
 CREATE TRIGGER accounts_kind_immutable BEFORE UPDATE OF kind
   ON madising.accounts FOR EACH ROW
