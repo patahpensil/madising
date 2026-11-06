@@ -9,6 +9,6 @@
   "scripts": {
     "api": "node apps/api/src/server.mjs",
     "test": "node --test apps/api/test/*.test.mjs",
-    "check:syntax": "node --check apps/api/src/server.mjs"
+    "check:syntax": "node --check apps/api/src/authz.mjs && node --check apps/api/src/directory.mjs && node --check apps/api/src/server.mjs && node --check apps/api/test/authz.test.mjs && node --check apps/api/test/directory.test.mjs && node --check apps/api/test/health.test.mjs"
   }
 }
