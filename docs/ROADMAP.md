@@ -42,3 +42,8 @@ Mengacu PRD §16 dan keputusan LOCK V1.3.6; **V1.4.2 menunggu gerbang persetujua
 - [ ] Paket perawatan ulang sesuai indikasi klinis, laporan KPI, optimasi jadwal dan ETA bila dibutuhkan.
 
 **Aturan rilis:** Keputusan teknis dan deployment berada pada Patah Pensil dengan CI, keamanan dan audit yang wajib. Tidak ada workflow klinis/PHI nyata tanpa otorisasi sah MADISING dan gerbang klinis/privasi; perubahan atas ketentuan persetujuan historis melalui CR-TECH-01 belum dianggap efektif sebelum OPEN-12/OPEN-18.
+
+
+## Web First scope update — 15 November 2026
+
+RME and SATUSEHAT integration deferred by project direction; OPEN-04 remains mandatory before clinical/production activation. Other nonclinical development can continue using synthetic data. See [scope update](WEB_STAGING_SCOPE.md). Do not mark integration or production gates complete.

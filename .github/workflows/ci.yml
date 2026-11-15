@@ -160,6 +160,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y postgresql-client
           psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/001_sessions.sql
+          psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/002_role_tokens.sql
       - name: Install and verify API
         run: |
           npm --prefix apps/staging-api install --no-audit --no-fund
@@ -173,13 +174,35 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          MADISING_TRIAL_ENABLED=1 npm --prefix apps/staging-api start > /tmp/madising-api.log 2>&1 &
+          MADISING_TRIAL_ENABLED=1 node apps/staging-api/dist/main.js > /tmp/madising-api.log 2>&1 &
           api=$!
-          trap 'kill "$api" 2>/dev/null || true' EXIT
+          trap 'kill "$api" 2>/dev/null || true; wait "$api" 2>/dev/null || true' EXIT
           for i in {1..30}; do
             if curl -fsS http://127.0.0.1:3001/readyz; then break; fi
             sleep 1
           done
           curl -fsS http://127.0.0.1:3001/readyz
           curl -fsS -X POST http://127.0.0.1:3001/trial/sessions -H 'Content-Type: application/json' -d '{}' > /tmp/madising-session.json
-          node -e 'const s=require("/tmp/madising-session.json");if(s.state.status!=="DRAFT"||s.state.version!==0||!s.token)process.exit(1)'
+          node -e 'const s=require("/tmp/madising-session.json");if(s.state.status!=="DRAFT"||s.state.version!==0||!s.tokens.PAT)process.exit(1)'
+
+      - name: Install browser test runner
+        run: |
+          npm --prefix apps/staging-web install --no-save --package-lock=false playwright
+          cd apps/staging-web
+          npx playwright install --with-deps chromium
+      - name: Verify Next.js to NestJS end-to-end HTTP and browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          MADISING_TRIAL_ENABLED=1 node apps/staging-api/dist/main.js > /tmp/trial-api.log 2>&1 &
+          api=$!
+          (cd apps/staging-web && MADISING_TRIAL_ENABLED=1 TRIAL_WEB_ORIGIN=http://127.0.0.1:3000 node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3000) > /tmp/trial-web.log 2>&1 &
+          web=$!
+          trap 'kill "$api" "$web" 2>/dev/null || true' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3001/readyz && curl -fsS http://127.0.0.1:3000/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node apps/staging-web/test/http-flow.mjs
+          node apps/staging-web/test/browser-flow.mjs
+          node apps/staging-web/test/preview-flow.mjs

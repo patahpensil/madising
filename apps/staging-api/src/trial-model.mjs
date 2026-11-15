@@ -1,14 +1,15 @@
+import { rankCandidates, trialCandidates, trialDestination, trialPositions, distanceMeters } from './trial-geo.mjs';
 export function initialTrial() {
-  return {version:0, status:'DRAFT', scenario:'INDEPENDENT', offer:null, assigned:null, declined:[], available:true, order:'NONE', assessed:false, planned:false, performed:false, evaluated:false, prescription:'NONE', delivery:'NONE', records:[]};
+  return {version:0, status:'DRAFT', scenario:'INDEPENDENT', offer:null, offerExpiresAt:null, assigned:null, declined:[], available:true, order:'NONE', assessed:false, planned:false, performed:false, evaluated:false, prescription:'NONE', delivery:'NONE', records:[]};
 }
-export function advanceTrial(state, role, action, expectedVersion) {
+export function advanceTrial(state, role, action, expectedVersion, now = Date.now()) {
   const reject = (reason) => ({ok:false,reason,state});
   if (!state || typeof state !== 'object' || !Number.isSafeInteger(expectedVersion) || expectedVersion !== state.version) return reject('STALE');
   if (!['PAT','NRS','DOC','PHA','CUR','ADM'].includes(role)) return reject('ROLE');
   const next = {...state};
   const is = (allowedRole, status) => role === allowedRole && state.status === status;
-  const findOffer = () => ['NURSE_B','NURSE_C'].find(id => !next.declined.includes(id)) ?? null;
-  const setOffer = () => { next.offer = next.available ? findOffer() : null; next.status = next.offer ? 'CONFIRMED' : 'RESCHEDULE_REQUESTED'; };
+  const findOffer = () => rankCandidates(trialCandidates(now),trialDestination,now,next.declined)[0]?.id ?? null;
+  const setOffer = () => { next.offer = next.available ? findOffer() : null; next.offerExpiresAt=next.offer?now+120000:null; next.status = next.offer ? 'CONFIRMED' : 'RESCHEDULE_REQUESTED'; };
   switch (action) {
     case 'INDEPENDENT': case 'MANDATE': case 'EMERGENCY': case 'OUTSIDE': case 'NO_CAPACITY':
       if (!is('PAT','DRAFT')) return reject('STATE_OR_ROLE');
@@ -34,8 +35,8 @@ export function advanceTrial(state, role, action, expectedVersion) {
       else setOffer();
       break;
     case 'ACCEPT':
-      if (!is('NRS','CONFIRMED') || !state.offer || state.assigned) return reject('STATE_OR_ROLE');
-      next.assigned=state.offer; next.offer=null; next.status='ASSIGNED'; break;
+      if (!is('NRS','CONFIRMED') || !state.offer || state.assigned || !Number.isSafeInteger(state.offerExpiresAt) || now>=state.offerExpiresAt) return reject('STATE_OR_ROLE');
+      next.assigned=state.offer; next.offer=null; next.offerExpiresAt=null; next.status='ASSIGNED'; break;
     case 'DECLINE':
     case 'EXPIRE':
       if (!is(action==='DECLINE'?'NRS':'ADM','CONFIRMED') || !state.offer) return reject('STATE_OR_ROLE');
@@ -46,7 +47,7 @@ export function advanceTrial(state, role, action, expectedVersion) {
       next.available=true; next.declined=[]; next.status='ELIGIBILITY_CHECK'; break;
     case 'CANCEL':
       if (role!=='PAT'||!['REQUESTED','TRIAGE_OK','LOCATION_OK','ELIGIBILITY_CHECK','CONFIRMED','ASSIGNED','EN_ROUTE','RESCHEDULE_REQUESTED'].includes(state.status)) return reject('STATE_OR_ROLE');
-      next.status='CANCELLED_BY_PATIENT'; next.offer=null; next.assigned=null; break;
+      next.status='CANCELLED_BY_PATIENT'; next.offer=null; next.offerExpiresAt=null; next.assigned=null; break;
     case 'DEPART':
       if (!is('NRS','ASSIGNED')||!state.assigned) return reject('STATE_OR_ROLE');
       next.status='EN_ROUTE'; break;
@@ -110,9 +111,9 @@ export function advanceTrial(state, role, action, expectedVersion) {
 }
 
 export function createTrialState() {
-  return { ...initialTrial(), billing: 'NOT_ISSUED' };
+  return { ...initialTrial(), billing:'NOT_ISSUED', tracking:null, consultation:{messages:[],call:'NONE',channel:null} };
 }
-export function applyTrialAction(state, role, action, version) {
+export function applyTrialAction(state, role, action, version, now = Date.now()) {
   if (!state || !Number.isSafeInteger(version) || version !== state.version) return { ok: false, reason: 'STALE', state };
   if (action === 'ISSUE_INVOICE' || action === 'SETTLE_INVOICE') {
     const eligible = state.status === 'COMPLETED' &&
@@ -123,5 +124,79 @@ export function applyTrialAction(state, role, action, version) {
     next.records = [...state.records, { version:next.version, role, action, status:next.status }].slice(-50);
     return { ok:true, reason:'OK', state:next };
   }
-  return advanceTrial(state, role, action, version);
+  const reject = () => ({ok:false,reason:'STATE_OR_ROLE',state});
+  const changed = (fields) => {
+    const next={...state,...fields,version:version+1};
+    next.records=[...state.records,{version:next.version,role,action,status:next.status}].slice(-50);
+    return {ok:true,reason:'OK',state:next};
+  };
+  if(action==='LOCATION_STEP'){
+    if(role!=='NRS'||state.status!=='EN_ROUTE'||!state.assigned)return reject();
+    const index=(state.tracking?.index??-1)+1;
+    if(index>=trialPositions.length)return reject();
+    const point=trialPositions[index];
+    return changed({tracking:{index,point,updatedAt:now,meters:distanceMeters(point,trialDestination),source:'SYNTHETIC'}});
+  }
+  if(['MESSAGE_REQUEST','MESSAGE_REPLY','REQUEST_AUDIO','REQUEST_VIDEO','ACCEPT_CALL','END_CALL'].includes(action)){
+    if(!['NRS','DOC'].includes(role)||state.status!=='IN_PROGRESS'||state.order==='NONE'||!state.assigned)return reject();
+    const current=state.consultation??{messages:[],call:'NONE',channel:null};
+    if(action==='MESSAGE_REQUEST'||action==='MESSAGE_REPLY'){
+      if((action==='MESSAGE_REQUEST'&&role!=='NRS')||(action==='MESSAGE_REPLY'&&role!=='DOC')||current.messages.length>=20)return reject();
+      if(action==='MESSAGE_REPLY'&&!current.messages.some(m=>m.role==='NRS'))return reject();
+      return changed({consultation:{...current,messages:[...current.messages,{role,kind:action,at:now}]}});
+    }
+    if(action==='REQUEST_AUDIO'||action==='REQUEST_VIDEO'){
+      if(role!=='NRS'||!['NONE','ENDED'].includes(current.call))return reject();
+      return changed({consultation:{...current,call:'REQUESTED',channel:action==='REQUEST_AUDIO'?'AUDIO':'VIDEO'}});
+    }
+    if(action==='ACCEPT_CALL'){
+      if(role!=='DOC'||current.call!=='REQUESTED')return reject();
+      return changed({consultation:{...current,call:'ACCEPTED_SIMULATION'}});
+    }
+    if(!['REQUESTED','ACCEPTED_SIMULATION'].includes(current.call))return reject();
+    return changed({consultation:{...current,call:'ENDED'}});
+  }
+  const result=advanceTrial(state,role,action,version,now);
+  if(result.ok){
+    if(result.state.status!=='EN_ROUTE')result.state.tracking=null;
+    if(result.state.status!=='IN_PROGRESS'&&result.state.consultation?.call!=='NONE'){
+      result.state.consultation={...result.state.consultation,call:'ENDED'};
+    }
+  }
+  return result;
+}
+
+export function projectTrialState(state,role,now=Date.now()){
+  const view={version:state.version,status:state.status,scenario:state.scenario};
+  if(['PAT','NRS','ADM'].includes(role))view.assigned=state.assigned;
+  if(['NRS','ADM'].includes(role)){view.offer=state.offer;view.offerExpiresAt=state.offerExpiresAt;}
+  if(['PAT','NRS'].includes(role)&&state.status==='EN_ROUTE'&&state.tracking){
+    view.tracking={...state.tracking,stale:now-state.tracking.updatedAt>120000};
+  }
+  if(role==='NRS'||role==='DOC')Object.assign(view,{order:state.order,planned:state.planned,performed:state.performed,prescription:state.prescription,consultation:state.consultation});
+  if(['PAT','ADM','PHA','CUR'].includes(role))Object.assign(view,{prescription:state.prescription,delivery:state.delivery});
+  if(['PAT','ADM'].includes(role))view.billing=state.billing;
+  return view;
+}
+
+/** Advance the synthetic booking and dispatch in the same locked store transaction. */
+export function applyAutomaticTrialAction(state,role,action,version,now=Date.now()){
+  const result=applyTrialAction(state,role,action,version,now);
+  if(!result.ok)return result;
+  if((action==='CONSENT'||action==='RESCHEDULE')&&result.state.status==='ELIGIBILITY_CHECK'){
+    if(result.state.version>=1000)return {ok:false,reason:'VERSION_LIMIT',state};
+    const dispatched=applyTrialAction(result.state,'ADM','DISPATCH',result.state.version,now);
+    if(!dispatched.ok)return {ok:false,reason:'DISPATCH_FAILED',state};
+    const records=dispatched.state.records.map(record=>record.version===dispatched.state.version?{...record,role:'SYSTEM'}:record);
+    return {...dispatched,state:{...dispatched.state,records}};
+  }
+  return result;
+}
+
+/** Expire the current offer using the trusted clock; do not accept an outdated response. */
+export function expireTrialOffer(state,now=Date.now()){
+  if(!state||state.status!=='CONFIRMED'||!state.offer||!Number.isSafeInteger(state.offerExpiresAt)||now<state.offerExpiresAt||state.version>=1000)return state;
+  const result=applyTrialAction(state,'ADM','EXPIRE',state.version,now);
+  if(!result.ok)return state;
+  return {...result.state,records:result.state.records.map(record=>record.version===result.state.version?{...record,role:'SYSTEM'}:record)};
 }
