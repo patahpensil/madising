@@ -71,6 +71,7 @@ MADISING adalah sistem operasional untuk **layanan homecare milik sendiri** di S
 | ACCOUNT-LOCK | Hanya Pasien dan Kurir dapat mendaftar sendiri; kurir tidak aktif bertugas sebelum diverifikasi Admin; dokter, perawat, apotek dibuat Admin. |
 | ROLE-LOCK | Setiap pengguna hanya dapat memakai resource dan tindakan yang diizinkan untuk peran dan penugasannya; dashboard utama tetap enam. |
 | STAFF-LOCK | Owner menyeleksi; Admin memeriksa dokumen dan mengundang setelah pemeriksaan kompetensi/kredensial serta persetujuan yang berlaku. |
+| NURSE-CREDENTIAL-LOCK | Turunan STAFF-LOCK khusus perawat: tujuh jenis dokumen sesuai §6.4, seleksi administratif dan klinis, persetujuan Owner serta kewenangan individual sebelum aktivasi. SKCK bukan syarat rekrutmen reguler. |
 | SIDRAP-LOCK | Booking divalidasi dari **tujuan kunjungan**, bukan posisi pemesan. Hanya Sidrap dalam pilot. |
 | GOVERNANCE-LOCK | Owner boleh juga menjadi Admin dengan audit konteks terpisah; Patah Pensil beridentitas teknis dan memperoleh sarana maintenance wajib; tidak mendapat akses rutin rekam medis. |
 | CLINICAL-LOCK | Diagnosis medis/resep dokter; diagnosis dan asuhan keperawatan oleh perawat sesuai kewenangan; tindakan yang mensyaratkan instruksi atau pelimpahan kewenangan hanya setelah syarat sah dipenuhi; consent dan RME existing dipertahankan. |
@@ -266,6 +267,46 @@ Payload signup publik yang memuat `role=doctor/nurse/pharmacy/admin/vendor` dito
 - Token akses berumur pendek, refresh token dirotasi/dicabut, deteksi logout dan pembekuan akun. Token seluler disimpan pada Android Keystore/iOS Keychain lewat secure storage; bukan plain-text local storage.
 - Akun publik mendukung pemulihan yang tidak membocorkan keberadaan pengguna; perubahan informasi sensitif memerlukan autentikasi ulang.
 
+## 6.4 Standar penerimaan dan seleksi perawat — NURSE-CREDENTIAL-LOCK (16 November 2026)
+
+Ketentuan ini memperinci STAFF-LOCK untuk perawat (NRS) berdasarkan keputusan persyaratan rekrutmen. Pengesahan institusional/klinis, legalitas praktik dan kebijakan pemrosesan dokumen tetap mengikuti §3.4–3.5, §17.3 dan §22. Tidak mengubah syarat profesi lain, ACCOUNT-LOCK, ROLE-LOCK maupun enam dashboard operasional.
+
+### 6.4.1 Dokumen calon perawat
+
+| ID | Dokumen | Ketentuan penerimaan |
+|---|---|---|
+| NRC-01 | Kartu Tanda Penduduk (KTP) | Wajib; identitas diverifikasi dan dicocokkan dengan dokumen profesi. |
+| NRC-02 | Curriculum Vitae (CV) | Wajib; memuat riwayat pendidikan dan pengalaman kerja/praktik apabila ada. |
+| NRC-03 | Ijazah Keperawatan | Wajib; kualifikasi dan keaslian diperiksa sesuai lingkup praktik yang diajukan. |
+| NRC-04 | Surat Tanda Registrasi (STR) | Wajib; sah dan status registrasi profesi diverifikasi. Tidak menetapkan tanggal kedaluwarsa buatan untuk STR seumur hidup. |
+| NRC-05 | Surat Izin Praktik (SIP) | Wajib; aktif dan sesuai kewenangan, lokasi serta bentuk penyelenggaraan praktik MADISING berdasarkan ketentuan yang berlaku. SIP dari fasilitas lain tidak otomatis dianggap cukup. |
+| NRC-06 | Sertifikat Kompetensi | Wajib; diverifikasi kesesuaian dengan profesi calon perawat. |
+| NRC-07 | Sertifikat Keahlian Khusus | Wajib hanya apabila menjadi prasyarat tindakan/layanan yang diajukan; tidak diwajibkan untuk semua perawat. BTCLS atau pelatihan lain mengikuti kebutuhan kewenangan dan SOP yang disahkan. |
+
+SKCK dikeluarkan dari daftar persyaratan rekrutmen reguler (bukan wajib maupun opsional); formulir dan checklist reguler tidak meminta atau menyimpan SKCK. Tidak ada ambang pengalaman kerja minimum yang berlaku mutlak untuk semua perawat. Lulusan baru dapat diterima apabila seluruh persyaratan yang berlaku terpenuhi dan hasil penilaian kompetensinya memadai untuk kewenangan yang ditetapkan. Dokumen ambigu, tidak lengkap atau tidak cocok ditahan untuk pemeriksaan/koreksi (`ON_HOLD`); tidak ada persetujuan otomatis.
+
+### 6.4.2 Tahapan seleksi internal dan pembagian kewenangan
+
+| ID | Tahapan | Penanggung jawab dan hasil wajib |
+|---|---|---|
+| NRC-08 | Verifikasi identitas dan dokumen | Admin memeriksa tujuh jenis dokumen menurut kondisi §6.4.1, mencatat sumber, hasil, pemeriksa, tanggal dan status berlaku bila relevan; `DOC_CHECKED` hanya jika semua syarat yang berlaku terpenuhi. |
+| NRC-09 | Wawancara calon perawat | Owner melakukan seleksi dan mencatat hasilnya. |
+| NRC-10 | Penilaian kompetensi klinis | Owner/PJ Klinis bersama penilai yang kompeten menilai kemampuan, termasuk uji praktik sesuai kewenangan yang diajukan; `CLINICAL_CHECKED` setelah penilaian dan wawancara memenuhi syarat. |
+| NRC-11 | Penetapan kewenangan tindakan | PJ Klinis menetapkan kewenangan individual sesuai kompetensi, izin, SOP dan ketentuan fasilitas; setiap tindakan yang membutuhkan sertifikasi khusus hanya diberikan setelah syaratnya diverifikasi. |
+| NRC-12 | Penandatanganan kontrak | Owner memastikan perjanjian kerja/kemitraan dan kewajiban kerahasiaan data ditandatangani sebelum aktivasi. Bentuk hubungan hukum mengikuti pengaturan MADISING yang sah. |
+| NRC-13 | Orientasi SOP dan aplikasi | Admin memastikan orientasi SOP, keselamatan pasien, privasi, eskalasi/rujukan dan penggunaan aplikasi selesai; materi klinis disahkan PJ Klinis. |
+| NRC-14 | Persetujuan penerimaan | Owner memberikan persetujuan eksplisit setelah hasil pemeriksaan, penilaian, kewenangan, kontrak dan orientasi tercatat; transisi ke `OWNER_APPROVED`. |
+| NRC-15 | Pembuatan dan aktivasi akun | Admin mengirim undangan sesuai §6.2–6.3; hanya setelah persetujuan Owner dan validasi ulang seluruh prasyarat; `INVITED → ACTIVE`. |
+
+Lamaran yang diterima MADISING (termasuk melalui formulir web apabila kanal tersebut dibangun dan disetujui) menghasilkan catatan kandidat `CANDIDATE`, bukan registrasi akun perawat, sesi operasional, role NRS atau akses pasien. Admin/Owner menggunakan konteks pada dashboard yang sudah ada; Vendor tidak menilai kompetensi, menyetujui penerimaan, atau mengakses dokumen rekrutmen secara rutin. Tidak ada dashboard ketujuh.
+
+### 6.4.3 Pengendalian kelayakan dan dokumen
+
+- Backend memvalidasi ulang status akun, izin, kompetensi dan kewenangan individual saat penawaran, penerimaan/assignment dan sebelum tindakan sesuai §7.2–7.3. Akun aktif bukan izin untuk semua tindakan; sertifikat khusus yang tidak memenuhi syarat memblokir tindakan terkait, bukan otomatis seluruh kewenangan yang masih sah.
+- Izin yang tidak sah, dicabut, kedaluwarsa atau tidak cocok memblokir penugasan yang terdampak; akun/credential state dan tugas aktif dievaluasi agar kesinambungan pelayanan aman, dengan eskalasi kepada PJ Klinis, handover jika diperlukan, revokasi akses sesuai state, serta audit. Perpanjangan dokumen tidak mengaktifkan kembali kewenangan tanpa pemeriksaan dan persetujuan yang dipersyaratkan.
+- Dokumen rekrutmen merupakan data pribadi terbatas, terpisah dari profil publik dan rekam medis pasien. Terapkan penyimpanan privat terenkripsi, pemeriksaan tipe/ukuran dan keamanan file, otorisasi server-side, tautan sementara, audit akses dan perubahan, serta kebijakan retensi/penghapusan yang disahkan sesuai OPEN-18. Jangan menampilkan KTP, CV, ijazah, SIP atau sertifikat lengkap kepada pasien; publikasi informasi profil/STR mengikuti ACC-PRO-01 dan OPEN-22.
+- Riwayat keputusan, alasan koreksi/penolakan, pemeriksaan dan versi kewenangan disimpan sesuai kebijakan retensi; perubahan tidak boleh menghapus jejak persetujuan sebelumnya. Uji menggunakan dokumen sintetis, bukan dokumen pelamar nyata, sampai gerbang pemrosesan data disahkan.
+
 # 7. Alur end-to-end produk
 
 ## 7.1 Alur pemesanan pasien
@@ -411,6 +452,8 @@ Sistem menerapkan transactional outbox atau mekanisme andal setara, retry berbat
 ## 9.6 DB-ADM — Admin/Owner
 
 `ADM-01` ringkasan operasional agregat; `ADM-02` review booking/triase lokasi; `ADM-03` dispatch, shift dan eligibility administratif; `ADM-04` staf & dokumen izin; `ADM-05` verifikasi kurir dan mitra apotek; `ADM-06` pengelolaan katalog, dengan aktivasi hanya setelah sign-off Owner sebagai PJ Klinis; `ADM-07` invoice, pembayaran dan refund; `ADM-08` pelacakan gangguan RME/apotek/kurir; `ADM-09` audit akses operasional; `ADM-10` pelaporan KPI; `ADM-11` Owner workflow untuk rekrutmen, kebijakan layanan dan tindakan berisiko. Admin **tidak** memiliki mode universal untuk membuka semua PHI. Penilaian eligibility klinis awal saat `ADMIN_REVIEW` hanya dengan scope `CCO` eksplisit dari Owner dan audit akses.
+
+`ADM-04` dan `ADM-11` mencakup daftar kandidat perawat, checklist dokumen kondisional, riwayat seleksi, orientasi, persetujuan Owner, undangan Admin dan pemantauan status kredensial sesuai §6.4; hak akses pemeriksaan dan persetujuan dipisahkan serta diaudit.
 
 ## 9.7 Developer Console Patah Pensil (teknis)
 
@@ -625,6 +668,7 @@ Hasil: spesifikasi teknis dipimpin Patah Pensil; pemetaan izin, skema data, thre
 ## R1 — Core Homecare pilot (kelayakan produksi terbatas)
 
 - Pendaftaran pasien dan kurir, provisioning internal, MFA, audit, penetapan consent/kuasa.
+- Rekrutmen dan provisioning perawat sesuai NURSE-CREDENTIAL-LOCK (§6.4), termasuk validasi kelayakan individual dan skenario UAT-56..63 sebelum penugasan pasien nyata.
 - Katalog sembilan layanan dengan flag aktivasi; booking layanan yang telah siap, triase, Sidrap geofence, review Admin, jadwal, dispatch eligible.
 - Dashboard Pasien, Perawat, Dokter, Admin nyata dan role-scoped; DB-PHA/DB-CUR tetap tersedia sesuai kebutuhan alur, tetapi aktivasi transaksi ditahan hingga mitra siap.
 - Perawat: penawaran/assignment, perjalanan dan live tracking kontekstual, check-in, proses asuhan lengkap, konsultasi dokter, order/mandat jika diperlukan, consent, tindakan, evaluasi dan dokumentasi privat, sinkronisasi RME atau prosedur bridging yang telah disahkan. Adapter SATUSEHAT hanya diaktifkan sesuai hasil verifikasi R0, hak akses FHIR dan pengujian R1; tidak memaksa koneksi Production jika prasyarat institusional belum terpenuhi.
@@ -803,6 +847,7 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 | **V1.4.2 — dispatch dan tracking** | Matching dan status dasar | §7.2.1–7.2.2, PAT-07/11, NRS-01/11, OPEN-20, UAT-39..42/46 |
 | **V1.4.2 — UI inti** | Referensi visual V1.3.7 | §14 dan prototipe V1.4.2, UAT-45; tidak mengubah SIX-DASHBOARD-LOCK |
 | **V1.4.3 — akses akun dan profil profesional** | Masuk akun uji dengan kata sandi | Addendum ACC-WA/ONB/PK/SET/PRO, OPEN-21..23, UAT-48..55; ACCOUNT-LOCK, STAFF-LOCK dan SIX-DASHBOARD-LOCK tidak berubah |
+| **V1.4.3 — standar penerimaan perawat (16 November 2026)** | STAFF-LOCK dan lifecycle tenaga klinis | NURSE-CREDENTIAL-LOCK, §6.4, NRC-01..15 dan UAT-56..63; SKCK dihapus dari rekrutmen reguler; ACCOUNT-LOCK dan kewenangan Owner/Admin dipertahankan |
 
 ## 21.1 Pemetaan ketentuan V1.3.6 → V1.4.1
 
@@ -981,3 +1026,17 @@ Rincian teknis, matriks traceability dan bukti uji: [ACCOUNT_ACCESS.md](ACCOUNT_
 | UAT-54 | Profil petugas sebelum penugasan, setelah penugasan, dokter tidak terlibat | Kosong, perawat tampil, dokter tidak tampil |
 | UAT-55 | Ulasan sebelum selesai, ganda, nilai di luar 1–5, label bebas | Ditolak; satu ulasan per tenaga per kunjungan selesai |
 
+## Addendum V1.4.3 — acceptance criteria standar penerimaan perawat (16 November 2026)
+
+Persyaratan §6.4 dan skenario berikut merupakan target implementasi, bukan hasil uji yang telah lulus. Gerbang §17.3 tetap berlaku.
+
+| UAT | Skenario | Hasil yang diharapkan |
+|---|---|---|
+| UAT-56 | Calon perawat mengajukan enam dokumen wajib terverifikasi; tidak mengajukan layanan khusus | Dapat diproses tanpa SKCK atau sertifikat khusus; tidak menjadi akun aktif secara otomatis. |
+| UAT-57 | Salah satu dokumen wajib hilang/rusak, STR tidak sah atau SIP tidak cocok | `ON_HOLD` untuk koreksi/evaluasi; tidak dapat diundang, aktif atau ditugaskan. |
+| UAT-58 | Sertifikat khusus tidak ada/tidak sah untuk tindakan yang mensyaratkannya | Kewenangan tindakan tersebut ditolak; kewenangan dasar yang memenuhi syarat dapat dinilai terpisah. |
+| UAT-59 | Calon lulusan baru tanpa riwayat pengalaman kerja memenuhi dokumen dan lulus seleksi klinis | Tidak ditolak semata-mata karena belum memiliki pengalaman minimum; hanya menerima kewenangan yang disahkan. |
+| UAT-60 | Admin mencoba mengundang/mengaktifkan sebelum hasil seleksi, kontrak, orientasi atau persetujuan Owner lengkap; Vendor/calon mencoba menyetujui sendiri | Ditolak backend dan diaudit; tidak ada eskalasi role atau bypass dengan manipulasi request. |
+| UAT-61 | Seluruh tahap NRC-08..15 terpenuhi dan undangan sah digunakan | Akun NRS aktif dengan kewenangan individual yang disetujui; pengulangan undangan tidak menambah akun/kewenangan. |
+| UAT-62 | Izin dicabut/kedaluwarsa saat penawaran, assignment atau sebelum tindakan; permintaan perubahan status bersamaan | Validasi server memblokir kewenangan terdampak, mengevaluasi tugas aktif/continuity, mencegah perlombaan status dan mempertahankan audit. |
+| UAT-63 | Pasien, kandidat lain, Vendor atau pengguna tanpa scope mencoba membaca dokumen/URL rekrutmen; unggahan tidak valid | Ditolak; penyimpanan privat, pemeriksaan file dan audit berlaku; tidak ada publikasi dokumen atau bocoran log. |
