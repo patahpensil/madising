@@ -184,6 +184,7 @@ export function applyAutomaticTrialAction(state,role,action,version,now=Date.now
   const result=applyTrialAction(state,role,action,version,now);
   if(!result.ok)return result;
   if((action==='CONSENT'||action==='RESCHEDULE')&&result.state.status==='ELIGIBILITY_CHECK'){
+    if(result.state.version>=1000)return {ok:false,reason:'VERSION_LIMIT',state};
     const dispatched=applyTrialAction(result.state,'ADM','DISPATCH',result.state.version,now);
     if(!dispatched.ok)return {ok:false,reason:'DISPATCH_FAILED',state};
     const records=dispatched.state.records.map(record=>record.version===dispatched.state.version?{...record,role:'SYSTEM'}:record);

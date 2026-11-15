@@ -52,13 +52,13 @@ export default function TrialPage(){
    const response=await fetch('/trial-api',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(15000)});
    const result=await response.json();
    if(response.ok&&operation==='create'){setSession({id:result.id,tokens:result.tokens,state:result.state});setRole('PAT');setRolePicker(false);}
-   else if(response.ok&&result.state){setSession(current=>({...current,state:result.state}));setRole(targetRole);setRolePicker(false);}
+   else if(response.ok&&result.state){setSession(current=>({...current,state:result.state}));setRole(targetRole);if(!quiet)setRolePicker(false);}
    else if(response.status===409&&result.state){setSession(current=>({...current,state:result.state}));setRole(targetRole);setMessage('Status berubah. Periksa langkah terbaru.');}
    else setMessage('Permintaan belum dapat diproses. Periksa koneksi atau mulai sesi baru.');
   }catch{setMessage('Koneksi terputus. Coba kembali atau mulai sesi baru.');}finally{pending.current=false;setBusy(false);}
  }
  const s=session?.state;
- useEffect(()=>{if(!session||!['PAT','NRS'].includes(role)||s?.status!=='EN_ROUTE')return;const timer=setInterval(()=>send('read',null,role,true),5000);return()=>clearInterval(timer);},[session,role]);
+ useEffect(()=>{if(rolePicker||!session||!['PAT','NRS'].includes(role)||s?.status!=='EN_ROUTE')return;const timer=setInterval(()=>send('read',null,role,true),5000);return()=>clearInterval(timer);},[session,role,rolePicker]);
  const billing={NOT_ISSUED:'Belum ditagihkan',ISSUED:'Menunggu pembayaran contoh',SETTLED:'Pembayaran contoh tercatat'};
  const medication={NONE:'Belum ada resep',RECEIVED:'Menunggu validasi',ACCEPTED:'Resep contoh diterima',REJECTED:'Resep contoh ditolak',READY:'Pesanan siap',HANDED_OFF:'Diserahkan ke kurir'};
  const delivery={NONE:'Belum ada pengantaran',PENDING:'Menunggu penugasan',ASSIGNED:'Kurir ditugaskan',PICKED_UP:'Dalam pengantaran',DELIVERED:'Diterima (simulasi)'};
