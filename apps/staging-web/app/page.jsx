@@ -47,7 +47,7 @@ export default function TrialPage(){
  const [session,setSession]=useState(null),[role,setRole]=useState('PAT'),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
  const pending=useRef(false);
  async function send(operation,action,targetRole=role,quiet=false){
-  if(pending.current)return;pending.current=true;if(!quiet){setBusy(true);setMessage('');}
+  if(pending.current)return;pending.current=true;setBusy(true);if(!quiet)setMessage('');
   try{
    const payload=operation==='create'?{operation}:{operation,id:session.id,token:session.tokens[targetRole],role:targetRole,action:operation==='read'?'READ':action,version:session.state.version};
    const response=await fetch('/trial-api',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(15000)});

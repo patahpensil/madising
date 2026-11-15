@@ -42,7 +42,7 @@ export class TrialStore {
     try {
       await client.query('BEGIN');
       await client.query("SET LOCAL lock_timeout = '2s'");
-      const result = await client.query('SELECT state,version FROM madising_trial.sessions WHERE id=$1 AND role_token_hashes->>$3=$2 AND expires_at > clock_timestamp() FOR UPDATE',[input.id,hash(input.token),input.role]);
+      const result = await client.query('SELECT state,version FROM madising_trial.sessions WHERE id=$1 AND role_token_hashes->>($3::text)=$2 AND expires_at > clock_timestamp() FOR UPDATE',[input.id,hash(input.token),input.role]);
       if (result.rowCount !== 1) { await client.query('ROLLBACK'); return {code:404}; }
       const row = result.rows[0];
       if(input.action==='READ'){await client.query('COMMIT');return {code:200,state:projectTrialState(row.state,input.role)};}
