@@ -208,3 +208,16 @@ jobs:
           node apps/staging-web/test/browser-flow.mjs
           node apps/staging-web/test/preview-flow.mjs
           node apps/staging-web/test/account-flow.mjs
+
+  staging-origin-check:
+    name: Staging origin configuration checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate deployment templates
+        run: |
+          bash -n infra/staging/build-release.sh
+          node --test infra/staging/preflight.test.mjs

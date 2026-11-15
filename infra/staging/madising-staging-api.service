@@ -1,0 +1,38 @@
+[Unit]
+Description=MADISING synthetic staging API
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=madising-api
+Group=madising-api
+WorkingDirectory=/opt/madising/current/apps/staging-api
+EnvironmentFile=/etc/madising/api.conf
+Environment=NODE_ENV=production
+Environment=MADISING_ACCOUNT_TRIAL=1
+Environment=MADISING_FIXTURE_HARNESS=0
+Environment=MADISING_TRIAL_ENABLED=1
+ExecStartPre=/usr/bin/node /opt/madising/current/infra/staging/preflight.mjs api
+ExecStart=/usr/bin/node dist/main.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+UMask=0077
+LimitNOFILE=4096
+TasksMax=128
+
+[Install]
+WantedBy=multi-user.target

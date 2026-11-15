@@ -54,3 +54,8 @@ See [decision record](DEVELOPMENT_DECISIONS_2026-11-15.md). These choices supers
 ## Web First scope adjustment
 
 RME and SATUSEHAT implementation deferred to separate workstream at project direction. All clinical/data/legal release gates remain. See [scope update](WEB_STAGING_SCOPE.md).
+
+
+## VPS staging decision — 15 November 2026
+
+Approved option A: dedicated VPS origin (NestJS + Next.js), separate private PostgreSQL staging, Cloudflare Tunnel and Access. Provider, price, hostname and tester allowlist remain to be supplied; no paid order or clinical/data release implied. See [VPS staging runbook](STAGING_VPS_RUNBOOK.md).

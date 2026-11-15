@@ -1,0 +1,38 @@
+[Unit]
+Description=MADISING synthetic staging web
+After=network-online.target madising-staging-api.service
+Wants=network-online.target madising-staging-api.service
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=madising-web
+Group=madising-web
+WorkingDirectory=/opt/madising/current/apps/staging-web
+EnvironmentFile=/etc/madising/web.conf
+Environment=NODE_ENV=production
+Environment=MADISING_ACCOUNT_TRIAL=1
+Environment=MADISING_FIXTURE_HARNESS=0
+ExecStartPre=/usr/bin/node /opt/madising/current/infra/staging/preflight.mjs web
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3000
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+UMask=0077
+LimitNOFILE=4096
+TasksMax=128
+ReadWritePaths=/opt/madising/current/apps/staging-web/.next/cache
+
+[Install]
+WantedBy=multi-user.target
