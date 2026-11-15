@@ -13,15 +13,29 @@ export async function POST(request){
  const reader=request.body?.getReader();if(!reader)return response({error:'invalid_request'},400);
  try{
   const chunks=[];let length=0;
-  while(true){const {done,value}=await reader.read();if(done)break;length+=value.byteLength;if(length>4096){await reader.cancel();return response({error:'too_large'},413);}chunks.push(value);}
+  while(true){const {done,value}=await reader.read();if(done)break;length+=value.byteLength;if(length>8192){await reader.cancel();return response({error:'too_large'},413);}chunks.push(value);}
   let body;try{body=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{return response({error:'invalid_request'},400);}
-  if(!body||!['register','login','logout','action','read'].includes(body.operation))return response({error:'invalid_request'},400);
-  const operation=body.operation==='read'?'action':body.operation;
-  const payload=operation==='login'||operation==='register'?{username:body.username,password:body.password,...(operation==='register'?{role:body.role}:{})}:operation==='logout'?{token}:{token,action:body.operation==='read'?'READ':body.action,version:body.operation==='read'?0:body.version};
-  if(!['register','login'].includes(operation)&&!token)return response({error:'unauthorized'},401);
+  const access={
+   otp_request:['otp/request',()=>({phone:body.phone,purpose:body.purpose,role:body.role}),false],
+   otp_verify:['otp/verify',()=>({phone:body.phone,code:body.code}),false],
+   passkey_auth_options:['passkeys/authenticate/options',()=>({}),false],
+   passkey_auth_verify:['passkeys/authenticate/verify',()=>({challengeId:body.challengeId,response:body.response}),false],
+   preferences:['preferences',()=>({token,patch:body.patch}),true],
+   passkey_register_options:['passkeys/register/options',()=>({token}),true],
+   passkey_register_verify:['passkeys/register/verify',()=>({token,challengeId:body.challengeId,response:body.response}),true],
+   passkeys:['passkeys',()=>({token,remove:body.remove}),true],
+   care_team:['care-team',()=>({token}),true],
+   review:['reviews',()=>({token,professionalKey:body.professionalKey,rating:body.rating,tags:body.tags}),true],
+  };
+  if(!body||!(['register','login','logout','action','read'].includes(body.operation)||Object.hasOwn(access,body.operation)))return response({error:'invalid_request'},400);
+  const route=access[body.operation];
+  const operation=route?route[0]:body.operation==='read'?'action':body.operation;
+  const payload=route?route[1]():operation==='login'||operation==='register'?{username:body.username,password:body.password,...(operation==='register'?{role:body.role}:{})}:operation==='logout'?{token}:{token,action:body.operation==='read'?'READ':body.action,version:body.operation==='read'?0:body.version};
+  if((route?route[2]:!['register','login'].includes(operation))&&!token)return response({error:'unauthorized'},401);
   const upstream=await fetch('http://127.0.0.1:3001/account/'+operation,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),cache:'no-store',signal:AbortSignal.timeout(10000)});
   const result=await upstream.json();
-  if(operation==='login'&&upstream.ok){
+  const issuesSession=['login','otp/verify','passkeys/authenticate/verify'].includes(operation)&&upstream.status===200;
+  if(issuesSession){
    if(typeof result.token!=='string'||!/^[a-f0-9]{64}$/.test(result.token))return response({error:'unavailable'},503);
    jar.set(cookieName,result.token,{httpOnly:true,secure,sameSite:'strict',path:'/',maxAge:7200});
    return response({role:result.role},200);
