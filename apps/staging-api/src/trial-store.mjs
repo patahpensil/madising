@@ -46,7 +46,9 @@ export class TrialStore {
         const auth=await client.query("SELECT a.id,a.role,a.exercise_id FROM madising_trial.accounts a JOIN madising_trial.account_sessions s ON s.account_id=a.id WHERE s.token_hash=$1 AND a.state='ACTIVE' AND s.expires_at>clock_timestamp() AND s.idle_until>clock_timestamp() FOR UPDATE OF a",[hash(input.token)]);
         if(auth.rowCount!==1){await client.query('ROLLBACK');return {code:401};}
         const identity=auth.rows[0];
-        const live=await client.query("UPDATE madising_trial.account_sessions SET idle_until=LEAST(expires_at,clock_timestamp()+interval '30 minutes') WHERE token_hash=$1 AND account_id=$2 AND expires_at>clock_timestamp() AND idle_until>clock_timestamp()",[hash(input.token),identity.id]);
+        const live=await client.query(input.action==='READ'
+          ? "SELECT 1 FROM madising_trial.account_sessions WHERE token_hash=$1 AND account_id=$2 AND expires_at>clock_timestamp() AND idle_until>clock_timestamp() FOR UPDATE"
+          : "UPDATE madising_trial.account_sessions SET idle_until=LEAST(expires_at,clock_timestamp()+interval '30 minutes') WHERE token_hash=$1 AND account_id=$2 AND expires_at>clock_timestamp() AND idle_until>clock_timestamp()",[hash(input.token),identity.id]);
         if(live.rowCount!==1){await client.query('ROLLBACK');return {code:401};}
         input={...input,id:identity.exercise_id,role:identity.role};
       }

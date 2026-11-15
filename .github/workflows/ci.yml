@@ -151,14 +151,18 @@ jobs:
     env:
       TRIAL_DATABASE_URL: postgresql://trial_ci:synthetic-ci-only@127.0.0.1:5432/trial_ci
       NEXT_TELEMETRY_DISABLED: '1'
-      # Synthetic CI-only pepper; real environments supply their own through protected configuration.
-      OTP_PEPPER: synthetic-ci-otp-pepper-not-a-secret-000000
       WHATSAPP_OTP_PROVIDER: fixture
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Generate disposable OTP pepper
+        shell: bash
+        run: |
+          pepper=$(node -e "process.stdout.write(require('node:crypto').randomBytes(32).toString('hex'))")
+          echo "::add-mask::$pepper"
+          printf 'OTP_PEPPER=%s\n' "$pepper" >> "$GITHUB_ENV"
       - name: Apply isolated trial migration
         run: |
           sudo apt-get update -qq
