@@ -74,7 +74,7 @@ export default function AccountPage(){
  },[]);
  async function signedIn(role,afterOtp){await perform({operation:'read'});nextOverlay(afterOtp);}
  async function finishTour(){setOverlay(null);await call({operation:'preferences',patch:{onboardingCompleted:true}}).catch(()=>{});}
- useEffect(()=>{perform({operation:'read'},true);},[]);
+ useEffect(()=>{perform({operation:'read'},true).then(()=>nextOverlay(false));},[nextOverlay]);
  useEffect(()=>{if(!identity)return;const timer=setInterval(()=>perform({operation:'read'},true),10000);return()=>clearInterval(timer);},[identity]);
  const tabs=[['home','Beranda'],...(identity==='PAT'?[['team','Tim perawatan']]:[]),['settings','Pengaturan']];
  return <div className="shell"><p className="notice">Staging terbatas · Akun dan data sintetis saja</p><main><strong className="brand">MADISING</strong>

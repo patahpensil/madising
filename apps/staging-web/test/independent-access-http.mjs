@@ -21,7 +21,8 @@ try{
  await page.goto(origin+'/account');await page.getByRole('heading',{name:'Pasien',exact:true}).waitFor();
  for(const width of [360,390,430,1280,1440]){
   await page.setViewportSize({width,height:844});
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'overflow at '+width);
+  await page.waitForTimeout(100);
+  const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll('main *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).map(e=>e.className).slice(0,8)}));assert.ok(dimensions.scroll<=dimensions.width,'overflow at '+width+': '+JSON.stringify(dimensions));
   if(shots)await page.screenshot({path:shots+'/independent-account-'+width+'.png'});
  }
  console.log('Independent HTTP account lock, payload limits, pending courier, cookie and responsive checks passed');

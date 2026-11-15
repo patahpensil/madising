@@ -64,3 +64,52 @@ test('independent synthetic phone and OTP persistence checks; malformed data rej
   ["INSERT INTO madising_trial.care_reviews(id,exercise_id,professional_key,account_id,rating,tags) VALUES($1,$2,'NURSE_B',$3,6,ARRAY['RAMAH'])",[randomUUID(),account.exercise_id,account.id]]
  ])await assert.rejects(trial.pool.query(sql,params),e=>e.code==='23514');
 });
+
+test('independent professional visibility includes the fallback nurse; a request alone is not a doctor order',async t=>{
+ const {access}=setup(t);
+ for(const status of ['DRAFT','REQUESTED','CONFIRMED'])assert.deepEqual(access.involved({status,assigned:'NURSE_C',order:'NONE'}),[]);
+ assert.deepEqual(access.involved({status:'ASSIGNED',assigned:'NURSE_C',order:'NONE'}),['NURSE_C']);
+ assert.deepEqual(access.involved({status:'IN_PROGRESS',assigned:'NURSE_C',order:'REQUESTED'}),['NURSE_C']);
+ assert.deepEqual(access.involved({status:'IN_PROGRESS',assigned:'NURSE_C',order:'SIGNED'}),['NURSE_C','DOCTOR_A']);
+});
+test('independent OTP verification burns five guesses including malformed input handling; expired code and pending courier denied',async t=>{
+ const {access,trial}=setup(t);const number=phone();
+ for(const role of ['DOC','NRS','PHA','ADM'])assert.equal((await access.requestOtp({phone:number,purpose:'REGISTER',role})).code,400);
+ const sent=await access.requestOtp({phone:number,purpose:'REGISTER',role:'PAT'});
+ const wrong=String((Number(sent.fixtureCode)+1)%1000000).padStart(6,'0');
+ for(const bad of ['12a456','12345','1234567'])assert.equal((await access.verifyOtp({phone:number,code:bad})).code,400);
+ for(let i=4;i>=0;i--)assert.deepEqual(await access.verifyOtp({phone:number,code:wrong}),{code:401,attemptsRemaining:i});
+ assert.equal((await access.verifyOtp({phone:number,code:sent.fixtureCode})).code,401);
+ await age(access,number);
+ const issued=await access.requestOtp({phone:number,purpose:'REGISTER',role:'CUR'});
+ await trial.pool.query("UPDATE madising_trial.otp_challenges SET created_at=clock_timestamp()-interval '6 minutes',expires_at=clock_timestamp()-interval '1 minute' WHERE phone_hmac=$1",[access.hmac(normalizeWhatsAppNumber(number))]);
+ assert.equal((await access.verifyOtp({phone:number,code:issued.fixtureCode})).code,401);
+ const courier=await access.requestOtp({phone:number,purpose:'REGISTER',role:'CUR'});
+ assert.deepEqual(await access.verifyOtp({phone:number,code:courier.fixtureCode}),{code:202,pending:true});
+ await age(access,number);const pending=await access.requestOtp({phone:number,purpose:'LOGIN'});assert.equal(pending.code,202);assert.equal(pending.fixtureCode,undefined);
+});
+test('independent review boundary and nonpatient denial through account tokens',async t=>{
+ const {trial,access}=setup(t);const p=await patient(access);
+ const {rows:[a]}=await trial.pool.query('SELECT id,exercise_id FROM madising_trial.accounts WHERE phone_hmac=$1',[access.hmac(normalizeWhatsAppNumber(p.number))]);
+ const profile='NURSE_C';
+ // This is a direct state fixture for the access boundary, not evidence of the clinical workflow.
+ const state={status:'ASSIGNED',assigned:profile,order:'NONE'};
+ async function setState(status,order='NONE'){await trial.pool.query('UPDATE madising_trial.sessions SET state=$1 WHERE id=$2',[JSON.stringify({...state,status,order}),a.exercise_id]);}
+ await setState('CONFIRMED');assert.deepEqual((await access.careTeam(p.token)).team,[]);
+ await setState('ASSIGNED');const assigned=(await access.careTeam(p.token)).team;assert.equal(assigned[0].key,profile);assert.equal(assigned[0].rating.total,0);
+ assert.equal((await access.review(p.token,{professionalKey:profile,rating:5})).code,409);
+ await setState('IN_PROGRESS','REQUESTED');assert.equal((await access.careTeam(p.token)).team.length,1);
+ await setState('IN_PROGRESS','SIGNED');assert.equal((await access.careTeam(p.token)).team.length,2);
+ await setState('COMPLETED','NONE');
+ for(const rating of [0,6,1.5])assert.equal((await access.review(p.token,{professionalKey:profile,rating})).code,400);
+ assert.equal((await access.review(p.token,{professionalKey:profile,rating:5,tags:['FREE']})).code,400);
+ assert.equal((await access.review(p.token,{professionalKey:'DOCTOR_A',rating:5})).code,409);
+ const reviews=await Promise.all(Array.from({length:10},()=>access.review(p.token,{professionalKey:profile,rating:4,tags:['RAMAH']})));
+ assert.equal(reviews.filter(x=>x.code===201).length,1);assert.equal(reviews.filter(x=>x.code===409).length,9);
+ for(const role of ['NRS','DOC','PHA','CUR','ADM']){
+  const id=randomUUID(),token=randomBytes(32).toString('hex');
+  await trial.pool.query("INSERT INTO madising_trial.accounts(id,username,role,state,salt,password_hash,exercise_id) VALUES($1,$2,$3,'ACTIVE',$4,$5,$6)",[id,'uji-'+randomBytes(8).toString('hex'),role,'a'.repeat(32),'b'.repeat(128),a.exercise_id]);
+  await trial.pool.query("INSERT INTO madising_trial.account_sessions(token_hash,account_id,expires_at,idle_until) VALUES($1,$2,clock_timestamp()+interval '1 hour',clock_timestamp()+interval '30 minutes')",[digest(token),id]);
+  assert.equal((await access.careTeam(token)).code,403,role);assert.equal((await access.review(token,{professionalKey:profile,rating:5})).code,403,role);
+ }
+});

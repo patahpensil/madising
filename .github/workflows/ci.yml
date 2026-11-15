@@ -240,6 +240,7 @@ jobs:
           done
           SCREENSHOT_DIR=/tmp/access-screens node apps/staging-web/test/access-flow.mjs
           SCREENSHOT_DIR=/tmp/access-screens node apps/staging-web/test/independent-access-http.mjs
+          node apps/staging-web/test/independent-passkeys.mjs
       - name: Keep access flow screenshots for review
         if: always()
         uses: actions/upload-artifact@v4

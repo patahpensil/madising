@@ -305,7 +305,7 @@ export class AccessStore {
   involved(state) {
     const keys = [];
     if (state.assigned && NURSE_VISIBLE.has(state.status)) keys.push(state.assigned);
-    if (state.order && state.order !== 'NONE') keys.push('DOCTOR_A');
+    if (['SIGNED','ACKNOWLEDGED','EXECUTED','REVOKED'].includes(state.order)) keys.push('DOCTOR_A');
     return keys.filter((key) => PROFILE_KEYS.includes(key));
   }
 
