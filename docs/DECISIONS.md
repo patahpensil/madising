@@ -1,6 +1,6 @@
 # MADISING — Locked Product Decisions
 
-**PRD V1.4.2 adalah proposed master**. Patah Pensil menetapkan keputusan rekayasa teknis; **OPEN-12** tetap diperlukan untuk pengesahan perubahan ketentuan historis yang mengikat MADISING, aspek klinis, dan tata kelola data. Owner tidak perlu menilai file JSON, stack, CI/CD ataupun detail keamanan teknis. LOCK V1.3.6 diringkas pada §2.1 PRD V1.4.2; rincian ketentuan dan uji V1.3.6 dipetakan di §21.1 dan yang belum dipindahkan tetap berlaku melalui arsip V1.3.6; salinan historis [PRD V1.3.6](reference/MADISING_PRD_V1.3.6_Registrasi_Dashboard_Terkunci.md) diarsipkan di `docs/reference/` untuk traceability. Arsip tidak secara otomatis mengesahkan interpretasi tata kelola lama; klarifikasi V1.4.1 harus disetujui Owner melalui OPEN-12. Selama menunggu persetujuan, ketentuan LOCK V1.3.6 tetap berlaku.
+**PRD V1.4.3 adalah proposed master**. Patah Pensil menetapkan keputusan rekayasa teknis; **OPEN-12** tetap diperlukan untuk pengesahan perubahan ketentuan historis yang mengikat MADISING, aspek klinis, dan tata kelola data. Owner tidak perlu menilai file JSON, stack, CI/CD ataupun detail keamanan teknis. LOCK V1.3.6 diringkas pada §2.1 PRD V1.4.2; rincian ketentuan dan uji V1.3.6 dipetakan di §21.1 dan yang belum dipindahkan tetap berlaku melalui arsip V1.3.6; salinan historis [PRD V1.3.6](reference/MADISING_PRD_V1.3.6_Registrasi_Dashboard_Terkunci.md) diarsipkan di `docs/reference/` untuk traceability. Arsip tidak secara otomatis mengesahkan interpretasi tata kelola lama; klarifikasi V1.4.1 harus disetujui Owner melalui OPEN-12. Selama menunggu persetujuan, ketentuan LOCK V1.3.6 tetap berlaku.
 
 ## SIX-DASHBOARD-LOCK
 
@@ -44,3 +44,8 @@ MADISING berfokus pada pemesanan perawat untuk kunjungan rumah (nurse-led, physi
 ## Scope and financing
 
 Pilot target: implementation with budget ceilings under evaluation (Rp30 million build, Rp5 million/month IT). Cost ceilings never override clinical safety and mandatory production security controls. Kesesuaian cakupan R1 dengan plafon merupakan **OPEN-17**; nominal tidak dimasukkan dalam PRD.
+
+
+## Approved development choices — 15 November 2026
+
+See [decision record](DEVELOPMENT_DECISIONS_2026-11-15.md). These choices supersede conflicting technical/product statements, not clinical or data authorization gates.
