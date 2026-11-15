@@ -33,3 +33,15 @@ test('five bad passwords lock the account',async(t)=>{
  for(let n=0;n<5;n++)assert.equal((await auth.login({...a,password:secret()})).code,401);
  assert.equal((await auth.login(a)).code,401);
 });
+
+test('expired session and unrelated exercise cannot read or change the original exercise',async(t)=>{
+ const trial=new TrialStore(process.env.TRIAL_DATABASE_URL);t.after(()=>trial.close());const auth=new AccountStore(trial.pool);
+ const p={username:name(),password:secret(),role:'PAT'},other={username:name(),password:secret(),role:'NRS'};
+ const first=await auth.provision(p);await auth.provision(other);
+ const pat=await auth.login(p),nurse=await auth.login(other);
+ let version=0;for(const action of ['REQUEST','SCREEN','VERIFY_DESTINATION','CONSENT']){const result=await trial.act({token:pat.token,action,version},true);assert.equal(result.code,200);version=result.state.version;}
+ const own=await trial.act({token:nurse.token,id:first.exerciseId,role:'NRS',action:'READ',version},true);
+ assert.equal(own.state.status,'DRAFT');assert.equal((await trial.act({token:nurse.token,id:first.exerciseId,action:'ACCEPT',version:0},true)).code,409);
+ await trial.pool.query("UPDATE madising_trial.account_sessions SET idle_until=clock_timestamp()-interval '1 second' WHERE account_id=(SELECT id FROM madising_trial.accounts WHERE username=$1)",[p.username]);
+ assert.equal((await trial.act({token:pat.token,action:'READ',version:0},true)).code,401);
+});

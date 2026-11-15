@@ -55,6 +55,10 @@ export class TrialStore {
         : await client.query('SELECT state,version FROM madising_trial.sessions WHERE id=$1 AND role_token_hashes->>($3::text)=$2 AND expires_at > clock_timestamp() FOR UPDATE',[input.id,hash(input.token),input.role]);
       if (result.rowCount !== 1) { await client.query('ROLLBACK'); return {code:accountMode?401:404}; }
       const row = result.rows[0];
+      if(accountMode){
+        const current=await client.query("SELECT 1 FROM madising_trial.account_sessions WHERE token_hash=$1 AND expires_at>clock_timestamp() AND idle_until>clock_timestamp()",[hash(input.token)]);
+        if(current.rowCount!==1){await client.query('ROLLBACK');return {code:401};}
+      }
       const now=Date.now();
       const expired=expireTrialOffer(row.state,now);
       if(expired!==row.state){

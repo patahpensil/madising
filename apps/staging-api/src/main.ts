@@ -18,6 +18,10 @@ class TrialController {
   async ready() {
     if (!this.store) throw new HttpException('trial_disabled',503);
     await this.store.ready().catch(() => { throw new HttpException('not_ready',503); });
+    if(process.env.MADISING_ACCOUNT_TRIAL==='1'){
+      await this.store.pool.query('SELECT 1 FROM madising_trial.accounts LIMIT 1').catch(()=>{throw new HttpException('not_ready',503);});
+      await this.store.pool.query('SELECT 1 FROM madising_trial.account_sessions LIMIT 1').catch(()=>{throw new HttpException('not_ready',503);});
+    }
     return { status:'ready', mode:'synthetic-only' };
   }
   @Post('trial/sessions')
