@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Body, Controller, Get, Header, HttpCode, HttpException, Module, Post } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, HttpException, Module, Post, Res } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AccountStore } from './account-store.mjs';
@@ -25,7 +25,11 @@ class TrialController {
   @Post('account/otp/verify')
   @HttpCode(200)
   @Header('Cache-Control','no-store')
-  otpVerify(@Body() input: any){ return this.accessCall(s=>s.verifyOtp(input),[200,202]); }
+  async otpVerify(@Body() input: any, @Res({passthrough:true}) response: {status(code:number):unknown}){
+    const result=await this.accessCall(s=>s.verifyOtp(input),[200,202]);
+    response.status(result.code);
+    return result;
+  }
   @Post('account/preferences')
   @HttpCode(200)
   @Header('Cache-Control','no-store')

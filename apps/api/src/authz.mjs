@@ -69,7 +69,7 @@ export function canViewDashboard(actor, dashboard) {
  * called after authenticated, scoped DB lookup and are not clinical endpoints.
  */
 export function authorizeAction(actor, action, resource = null) {
-  if (!actor?.account || actor.account.state !== 'ACTIVE' || !resource ||
+  if (!actor?.account || typeof actor.account.id !== 'string' || !actor.account.id.trim() || actor.account.state !== 'ACTIVE' || !resource ||
       typeof resource !== 'object') return false;
   switch (action) {
     case 'booking.create':

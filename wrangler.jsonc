@@ -1,0 +1,8 @@
+{
+  "name": "madising",
+  "compatibility_date": "2026-11-15",
+  "assets": {
+    "directory": "./apps/web/trial"
+  },
+  "previews": {}
+}

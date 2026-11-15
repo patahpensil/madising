@@ -1,6 +1,6 @@
 // Synthetic professional profiles for the staging exercise only. They describe
 // fixture roles, not real people, and must never be presented as verified staff.
-export const PROFILE_KEYS = Object.freeze(['NURSE_A', 'NURSE_B', 'DOCTOR_A']);
+export const PROFILE_KEYS = Object.freeze(['NURSE_A', 'NURSE_B', 'NURSE_C', 'DOCTOR_A']);
 
 const profiles = Object.freeze({
   NURSE_A: {
@@ -12,6 +12,11 @@ const profiles = Object.freeze({
     key: 'NURSE_B', profession: 'NURSE', displayName: 'Perawat Uji B', title: 'A.Md.Kep.',
     competencies: ['Perawatan lansia', 'Asuhan pascaoperasi'], experienceYears: 4,
     education: [{ program: 'Diploma III Keperawatan', year: 2021 }], practiceSite: 'Klinik penyelenggara (data uji)',
+  },
+  NURSE_C: {
+    key: 'NURSE_C', profession: 'NURSE', displayName: 'Perawat Uji C', title: 'Ners (data uji)',
+    competencies: ['Asuhan keperawatan (data uji)'], experienceYears: 0,
+    education: [], practiceSite: 'Klinik penyelenggara (data uji)',
   },
   DOCTOR_A: {
     key: 'DOCTOR_A', profession: 'DOCTOR', displayName: 'Dokter Uji A', title: 'dr.',
