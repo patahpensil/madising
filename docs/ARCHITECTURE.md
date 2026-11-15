@@ -2,9 +2,9 @@
 
 ## Approach
 
-Rancangan awal berupa modular monolith: Flutter Android/iOS, web responsif, API modular, PostgreSQL/PostGIS, private clinical media storage serta adapter RME/SATUSEHAT/apotek/kurir. **Patah Pensil memutuskan OPEN-13** (NestJS + Next.js vs Node tanpa framework) berdasarkan uji teknis; belum ada keputusan stack final. Penyedia cloud, penempatan data, dan kontrak pemrosesan belum final; pilihan teknis Vendor harus mematuhi otorisasi pengendali data.
+Rancangan awal berupa modular monolith: Flutter Android/iOS, web responsif, API modular, PostgreSQL/PostGIS, private clinical media storage serta adapter RME/SATUSEHAT/apotek/kurir. **OPEN-13 diputuskan:** NestJS/TypeScript dan Next.js, PostgreSQL/PostGIS. Cloudflare sebagai edge staging dengan backend dan database terpisah. Penyedia cloud, penempatan data, dan kontrak pemrosesan belum final; pilihan teknis Vendor harus mematuhi otorisasi pengendali data.
 
-Baseline kode saat ini menggunakan **Node `.mjs` tanpa framework** untuk API healthcheck, policy otorisasi awal dan adapter lookup identitas PostgreSQL; frontend web masih statis dan Flutter masih skeleton. Verifikasi OIDC runtime, signup/undangan nyata, NestJS/Next.js, RME integration dan layanan produksi belum aktif. Baseline `.mjs` akan di-port atau dipertahankan **hanya setelah keputusan OPEN-13**; jangan menyatakan salah satunya sudah disahkan.
+Baseline kode saat ini menggunakan **Node `.mjs` tanpa framework** untuk API healthcheck, policy otorisasi awal dan adapter lookup identitas PostgreSQL; frontend web masih statis dan Flutter masih skeleton. Verifikasi OIDC runtime, signup/undangan nyata, NestJS/Next.js, RME integration dan layanan produksi belum aktif. Baseline `.mjs` dipertahankan untuk regression test selama port bertahap; aplikasi staging baru terpisah dan tanpa data nyata.
 
 ## Logical modules (planned)
 
@@ -32,3 +32,6 @@ Use a production-approved provider with verified data-processing contracts, encr
 ## Release safety
 
 Branch PR → tests/review → staging sintetis → keputusan rilis teknis Patah Pensil melalui gerbang kontrol/audit → monitoring dan rollback. Kesiapan pelayanan klinis serta penggunaan data pasien tetap memerlukan otorisasi institusional yang sah. App Store/Play publication mengikuti persyaratan platform. No live deployment is configured in this baseline.
+
+
+Web First: Cloudflare Tunnel/Access → Next.js origin → NestJS origin → private PostgreSQL. Trial only uses synthetic session schema. No live edge configuration is active. Sequential offers, post-service billing, text/audio/video consultation scope follow [decision record](DEVELOPMENT_DECISIONS_2026-11-15.md).
