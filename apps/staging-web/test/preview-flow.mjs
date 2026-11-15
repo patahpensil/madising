@@ -2,11 +2,39 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import {readFile,mkdir} from 'node:fs/promises';
+import {setTimeout as delay} from 'node:timers/promises';
 const browser=await chromium.launch({headless:true});
 try{
  const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];
  page.on('pageerror',e=>errors.push(String(e)));
- await page.goto(pathToFileURL(resolve('apps/web/trial/index.html')).href);
+ const url=process.env.PREVIEW_URL||pathToFileURL(resolve('apps/web/trial/index.html')).href;
+ if(process.env.PREVIEW_URL){
+  const expected=await readFile('apps/web/trial/index.html','utf8');
+  // Wait only for the Git-connected Worker to publish the exact checked-out HTML.
+  let matched=false;
+  for(let retry=0;retry<24;retry++){
+   try{const res=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(5000)});if(res.ok&&await res.text()===expected){assert.match(res.headers.get('x-robots-tag')??'',/noindex/i);matched=true;break;}}catch(error){if(error instanceof assert.AssertionError)throw error;}
+   await delay(5000);
+  }
+  assert.ok(matched,'Public static preview did not return the exact checked-out HTML');
+ }
+ await page.goto(url);
+ assert.match(await page.locator('body').innerText(),/data sintetis/i);
+ const shots=process.env.PREVIEW_SCREENSHOT_DIR;
+ if(shots){
+  await mkdir(shots,{recursive:true});
+  for(const width of [390,1440]){
+   await page.setViewportSize({width,height:900});
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+   await page.screenshot({path:shots+'/preview-entry-'+width+'.png'});
+   await page.locator('[data-enter="PAT"]').click();
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+   await page.screenshot({path:shots+'/preview-patient-'+width+'.png'});
+   await page.getByRole('button',{name:'Keluar dari akun uji',exact:true}).click();
+  }
+  await page.setViewportSize({width:390,height:844});
+ }
  const click=async(name)=>page.getByRole('button',{name,exact:true}).click();
  const enter=async(role)=>{await page.locator('[data-enter="'+role+'"]').click();};
  const exit=()=>click('Keluar dari akun uji');

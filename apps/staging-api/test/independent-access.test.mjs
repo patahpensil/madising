@@ -93,7 +93,7 @@ test('independent review boundary and nonpatient denial through account tokens',
  const {rows:[a]}=await trial.pool.query('SELECT id,exercise_id FROM madising_trial.accounts WHERE phone_hmac=$1',[access.hmac(normalizeWhatsAppNumber(p.number))]);
  const profile='NURSE_C';
  // This is a direct state fixture for the access boundary, not evidence of the clinical workflow.
- const state={status:'ASSIGNED',assigned:profile,order:'NONE'};
+ const state={version:0,status:'ASSIGNED',assigned:profile,order:'NONE'};
  async function setState(status,order='NONE'){await trial.pool.query('UPDATE madising_trial.sessions SET state=$1 WHERE id=$2',[JSON.stringify({...state,status,order}),a.exercise_id]);}
  await setState('CONFIRMED');assert.deepEqual((await access.careTeam(p.token)).team,[]);
  await setState('ASSIGNED');const assigned=(await access.careTeam(p.token)).team;assert.equal(assigned[0].key,profile);assert.equal(assigned[0].rating.total,0);

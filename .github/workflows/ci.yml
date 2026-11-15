@@ -248,3 +248,31 @@ jobs:
           name: access-flow-screenshots
           path: /tmp/access-screens
           if-no-files-found: ignore
+
+  public-static-preview:
+    name: Verify published static preview after merge
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium test runner
+        run: |
+          npm --prefix apps/staging-web ci --no-audit --no-fund
+          npm --prefix apps/staging-web install --no-save --package-lock=false playwright
+          cd apps/staging-web
+          npx playwright install --with-deps chromium
+      - name: Verify exact published HTML, noindex, synthetic banner and browser journey
+        env:
+          PREVIEW_URL: https://madising.patahpensilsimulasi.workers.dev
+          PREVIEW_SCREENSHOT_DIR: /tmp/public-preview-screens
+        run: node apps/staging-web/test/preview-flow.mjs
+      - name: Retain public preview screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-preview-screenshots
+          path: /tmp/public-preview-screens
+          if-no-files-found: ignore
