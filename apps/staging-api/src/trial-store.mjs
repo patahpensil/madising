@@ -34,16 +34,26 @@ export class TrialStore {
       throw error;
     } finally { client.release(discard); }
   }
-  async act(input) {
-    if (!input || !validId(input.id) || !validToken(input.token) || !roles.has(input.role) ||
+  async act(input, accountMode = false) {
+    if (!input || !validToken(input.token) || (!accountMode && (!validId(input.id) || !roles.has(input.role))) ||
       !actions.has(input.action) || !Number.isSafeInteger(input.version) || input.version < 0 || input.version > 1000) return {code:400};
     const client = await this.pool.connect();
     let discard = false;
     try {
       await client.query('BEGIN');
       await client.query("SET LOCAL lock_timeout = '2s'");
-      const result = await client.query('SELECT state,version FROM madising_trial.sessions WHERE id=$1 AND role_token_hashes->>($3::text)=$2 AND expires_at > clock_timestamp() FOR UPDATE',[input.id,hash(input.token),input.role]);
-      if (result.rowCount !== 1) { await client.query('ROLLBACK'); return {code:404}; }
+      if(accountMode){
+        const auth=await client.query("SELECT a.id,a.role,a.exercise_id FROM madising_trial.accounts a JOIN madising_trial.account_sessions s ON s.account_id=a.id WHERE s.token_hash=$1 AND a.state='ACTIVE' AND s.expires_at>clock_timestamp() AND s.idle_until>clock_timestamp() FOR UPDATE OF a",[hash(input.token)]);
+        if(auth.rowCount!==1){await client.query('ROLLBACK');return {code:401};}
+        const identity=auth.rows[0];
+        const live=await client.query("UPDATE madising_trial.account_sessions SET idle_until=LEAST(expires_at,clock_timestamp()+interval '30 minutes') WHERE token_hash=$1 AND account_id=$2 AND expires_at>clock_timestamp() AND idle_until>clock_timestamp()",[hash(input.token),identity.id]);
+        if(live.rowCount!==1){await client.query('ROLLBACK');return {code:401};}
+        input={...input,id:identity.exercise_id,role:identity.role};
+      }
+      const result = accountMode
+        ? await client.query('SELECT state,version FROM madising_trial.sessions WHERE id=$1 AND expires_at>clock_timestamp() FOR UPDATE',[input.id])
+        : await client.query('SELECT state,version FROM madising_trial.sessions WHERE id=$1 AND role_token_hashes->>($3::text)=$2 AND expires_at > clock_timestamp() FOR UPDATE',[input.id,hash(input.token),input.role]);
+      if (result.rowCount !== 1) { await client.query('ROLLBACK'); return {code:accountMode?401:404}; }
       const row = result.rows[0];
       const now=Date.now();
       const expired=expireTrialOffer(row.state,now);
@@ -51,16 +61,16 @@ export class TrialStore {
         const updated=await client.query('UPDATE madising_trial.sessions SET state=$1,version=$2 WHERE id=$3 AND version=$4 AND expires_at > clock_timestamp()',[JSON.stringify(expired),expired.version,input.id,row.version]);
         if(updated.rowCount!==1){await client.query('ROLLBACK');return {code:409};}
         await client.query('COMMIT');
-        return {code:input.action==='READ'?200:409,state:projectTrialState(expired,input.role,now)};
+        return {code:input.action==='READ'?200:409,role:input.role,state:projectTrialState(expired,input.role,now)};
       }
-      if(input.action==='READ'){await client.query('COMMIT');return {code:200,state:projectTrialState(row.state,input.role)};}
-      if(row.version>=1000){await client.query('ROLLBACK');return {code:409,state:projectTrialState(row.state,input.role,now)};}
+      if(input.action==='READ'){await client.query('COMMIT');return {code:200,role:input.role,state:projectTrialState(row.state,input.role)};}
+      if(row.version>=1000){await client.query('ROLLBACK');return {code:409,role:input.role,state:projectTrialState(row.state,input.role,now)};}
       const transition = applyAutomaticTrialAction(row.state,input.role,input.action,input.version,now);
-      if (row.version !== input.version || !transition.ok) { await client.query('ROLLBACK'); return {code:409, state:projectTrialState(row.state,input.role)}; }
+      if (row.version !== input.version || !transition.ok) { await client.query('ROLLBACK'); return {code:409, role:input.role,state:projectTrialState(row.state,input.role)}; }
       const updated = await client.query('UPDATE madising_trial.sessions SET state=$1,version=$2 WHERE id=$3 AND version=$4 AND expires_at > clock_timestamp()',[JSON.stringify(transition.state),transition.state.version,input.id,input.version]);
       if (updated.rowCount !== 1) { await client.query('ROLLBACK'); return {code:409}; }
       await client.query('COMMIT');
-      return {code:200,state:projectTrialState(transition.state,input.role)};
+      return {code:200,role:input.role,state:projectTrialState(transition.state,input.role)};
     } catch (error) {
       try { await client.query('ROLLBACK'); } catch { discard = true; }
       throw error;

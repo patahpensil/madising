@@ -161,6 +161,7 @@ jobs:
           sudo apt-get install -y postgresql-client
           psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/001_sessions.sql
           psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/002_role_tokens.sql
+          psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/003_accounts.sql
       - name: Install and verify API
         run: |
           npm --prefix apps/staging-api install --no-audit --no-fund
@@ -174,7 +175,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          MADISING_TRIAL_ENABLED=1 node apps/staging-api/dist/main.js > /tmp/madising-api.log 2>&1 &
+          MADISING_TRIAL_ENABLED=1 MADISING_FIXTURE_HARNESS=1 MADISING_ACCOUNT_TRIAL=1 node apps/staging-api/dist/main.js > /tmp/madising-api.log 2>&1 &
           api=$!
           trap 'kill "$api" 2>/dev/null || true; wait "$api" 2>/dev/null || true' EXIT
           for i in {1..30}; do
@@ -194,9 +195,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          MADISING_TRIAL_ENABLED=1 node apps/staging-api/dist/main.js > /tmp/trial-api.log 2>&1 &
+          MADISING_TRIAL_ENABLED=1 MADISING_FIXTURE_HARNESS=1 MADISING_ACCOUNT_TRIAL=1 node apps/staging-api/dist/main.js > /tmp/trial-api.log 2>&1 &
           api=$!
-          (cd apps/staging-web && MADISING_TRIAL_ENABLED=1 TRIAL_WEB_ORIGIN=http://127.0.0.1:3000 node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3000) > /tmp/trial-web.log 2>&1 &
+          (cd apps/staging-web && MADISING_TRIAL_ENABLED=1 MADISING_FIXTURE_HARNESS=1 MADISING_ACCOUNT_TRIAL=1 TRIAL_WEB_ORIGIN=http://127.0.0.1:3000 node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3000) > /tmp/trial-web.log 2>&1 &
           web=$!
           trap 'kill "$api" "$web" 2>/dev/null || true' EXIT
           for i in {1..30}; do

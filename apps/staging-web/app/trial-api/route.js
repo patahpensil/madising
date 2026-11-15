@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 const headers = { 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff' };
 export async function POST(request) {
-  if (process.env.MADISING_TRIAL_ENABLED !== '1') return Response.json({error:'trial_disabled'},{status:503,headers});
+  if (process.env.MADISING_TRIAL_ENABLED !== '1' || process.env.MADISING_FIXTURE_HARNESS !== '1') return Response.json({error:'trial_disabled'},{status:503,headers});
   const allowedOrigin = process.env.TRIAL_WEB_ORIGIN || 'http://localhost:3000';
   if (request.headers.get('origin') !== allowedOrigin || request.headers.get('content-type') !== 'application/json') return Response.json({error:'invalid_request'},{status:403,headers});
   const reader = request.body?.getReader();
