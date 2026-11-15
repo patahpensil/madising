@@ -6,10 +6,9 @@ try {
   const errors=[];page.on('pageerror',error=>errors.push(String(error)));
   await page.goto('http://127.0.0.1:3000/');
   const click=async(name)=>{await page.getByRole('button',{name,exact:true}).click({timeout:15000});};
-  const select=async(name)=>{await page.getByRole('navigation',{name:'Peran simulasi'}).getByRole('button',{name,exact:true}).click();await page.getByRole('heading',{name,exact:true,level:1}).waitFor();};
+  const select=async(name)=>{await click('Keluar ke pilihan akun uji');await page.getByRole('navigation',{name:'Peran simulasi'}).getByRole('button',{name,exact:true}).click();await page.getByRole('heading',{name,exact:true,level:1}).waitFor();};
   await click('Mulai uji coba');
   await click('Pesan perawat');await click('Jalankan skrining contoh');await click('Periksa alamat contoh');await click('Setujui permintaan');
-  await select('Administrator');await click('Cari perawat');
   await select('Perawat');await click('Terima tugas');await click('Mulai perjalanan');await click('Kirim titik perjalanan contoh');
   await select('Pasien');await page.getByText('Titik contoh 1 dari 3',{exact:true}).waitFor();
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'mobile horizontal overflow');
