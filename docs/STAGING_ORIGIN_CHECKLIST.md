@@ -13,4 +13,7 @@ The Git-connected Cloudflare Worker named madising publishes apps/web/trial only
 
 ## Current blockers
 
-The account Patah Pensil Simulasi supports the static Worker. Access API reports that Access is not enabled. No MADISING tunnel was found. The Containers API reports Workers Paid is required; no purchase made. A separate backend origin and database connection have not been provisioned. The public preview deployment does not satisfy this checklist. No production activation or RME/SATUSEHAT integration.
+The account Patah Pensil Simulasi supports the static Worker. Access API reports that Access is not enabled. The managed madising-staging tunnel was subsequently created and remains inactive without a connector or ingress route. The Containers API reports Workers Paid is required; no purchase made. A separate backend origin and database connection have not been provisioned. The public preview deployment does not satisfy this checklist. No production activation or RME/SATUSEHAT integration.
+
+
+Procurement hold: VPS and database rental deferred by project direction. Retain option A architecture without provisioning infrastructure. Existing public static preview and disposable CI are the only authorized testing paths; shared account staging remains unavailable. See STAGING_VPS_RUNBOOK.md.
