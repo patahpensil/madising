@@ -130,3 +130,51 @@ test('independent verify-response enumeration regression: wrong codes for regist
  await trial.pool.query("UPDATE madising_trial.otp_challenges SET code_hmac=$1 WHERE phone_hmac=$2 AND consumed_at IS NULL",[access.hmac(hmac+':'+wrong),hmac]);
  const guessed=await access.verifyOtp({phone:unknown,code:wrong});assert.equal(guessed.code,401);assert.equal(guessed.token,undefined);
 });
+
+test('independent database constraint matrix for the access migration',async t=>{
+ const {trial,access}=setup(t);const p=await patient(access);
+ const {rows:[a]}=await trial.pool.query('SELECT * FROM madising_trial.accounts WHERE phone_hmac=$1',[access.hmac(normalizeWhatsAppNumber(p.number))]);
+ const {rows:[o]}=await trial.pool.query('SELECT id FROM madising_trial.otp_challenges WHERE phone_hmac=$1',[a.phone_hmac]);
+ const key=randomBytes(24).toString('base64url'),challenge=randomUUID(),review=randomUUID(),missing=randomUUID();
+ await trial.pool.query('INSERT INTO madising_trial.passkeys(credential_id,account_id,public_key) VALUES($1,$2,$3)',[key,a.id,Buffer.alloc(64,1)]);
+ await trial.pool.query("INSERT INTO madising_trial.webauthn_challenges(id,account_id,purpose,challenge,expires_at) VALUES($1,$2,'REGISTER',$3,clock_timestamp()+interval '1 minute')",[challenge,a.id,randomBytes(32).toString('base64url')]);
+ await trial.pool.query("INSERT INTO madising_trial.care_reviews(id,exercise_id,professional_key,account_id,rating) VALUES($1,$2,'NURSE_X',$3,4)",[review,a.exercise_id,a.id]);
+ const checks=[
+ ['account identity absent',"UPDATE madising_trial.accounts SET phone_hmac=NULL WHERE id=$1",[a.id],'23514'],
+ ['account last4 malformed',"UPDATE madising_trial.accounts SET phone_last4='abc' WHERE id=$1",[a.id],'23514'],
+ ['account phone duplicate',"INSERT INTO madising_trial.accounts(id,role,state,phone_hmac,phone_last4,exercise_id) VALUES($1,'PAT','ACTIVE',$2,'0000',$3)",[missing,a.phone_hmac,a.exercise_id],'23505'],
+ ['otp phone hmac',"UPDATE madising_trial.otp_challenges SET phone_hmac='raw' WHERE id=$1",[o.id],'23514'],
+ ['otp purpose',"UPDATE madising_trial.otp_challenges SET purpose='OTHER' WHERE id=$1",[o.id],'23514'],
+ ['otp registration role mismatch',"UPDATE madising_trial.otp_challenges SET role=NULL WHERE id=$1",[o.id],'23514'],
+ ['otp invalid code hash',"UPDATE madising_trial.otp_challenges SET code_hmac='123456' WHERE id=$1",[o.id],'23514'],
+ ['otp expiry before creation',"UPDATE madising_trial.otp_challenges SET expires_at=created_at WHERE id=$1",[o.id],'23514'],
+ ['otp negative attempts',"UPDATE madising_trial.otp_challenges SET attempts=-1 WHERE id=$1",[o.id],'23514'],
+ ['otp may verify null',"UPDATE madising_trial.otp_challenges SET may_verify=NULL WHERE id=$1",[o.id],'23502'],
+ ['passkey invalid alphabet',"UPDATE madising_trial.passkeys SET credential_id=repeat('!',24) WHERE credential_id=$1",[key],'23514'],
+ ['passkey length >1024',"UPDATE madising_trial.passkeys SET credential_id=repeat('A',1025) WHERE credential_id=$1",[key],'23514'],
+ ['passkey account FK',"UPDATE madising_trial.passkeys SET account_id=$2 WHERE credential_id=$1",[key,missing],'23503'],
+ ['passkey public key too short',"UPDATE madising_trial.passkeys SET public_key=$2 WHERE credential_id=$1",[key,Buffer.alloc(31)],'23514'],
+ ['passkey public key too long',"UPDATE madising_trial.passkeys SET public_key=$2 WHERE credential_id=$1",[key,Buffer.alloc(2049)],'23514'],
+ ['passkey negative count',"UPDATE madising_trial.passkeys SET sign_count=-1 WHERE credential_id=$1",[key],'23514'],
+ ['passkey null transports',"UPDATE madising_trial.passkeys SET transports=NULL WHERE credential_id=$1",[key],'23502'],
+ ['passkey duplicate ID',"INSERT INTO madising_trial.passkeys(credential_id,account_id,public_key) VALUES($1,$2,$3)",[key,a.id,Buffer.alloc(64)],'23505'],
+ ['challenge foreign account',"UPDATE madising_trial.webauthn_challenges SET account_id=$2 WHERE id=$1",[challenge,missing],'23503'],
+ ['challenge invalid purpose',"UPDATE madising_trial.webauthn_challenges SET purpose='OTHER' WHERE id=$1",[challenge],'23514'],
+ ['challenge registration without account',"UPDATE madising_trial.webauthn_challenges SET account_id=NULL WHERE id=$1",[challenge],'23514'],
+ ['challenge auth with account',"UPDATE madising_trial.webauthn_challenges SET purpose='AUTHENTICATE' WHERE id=$1",[challenge],'23514'],
+ ['challenge bad encoding',"UPDATE madising_trial.webauthn_challenges SET challenge='short' WHERE id=$1",[challenge],'23514'],
+ ['challenge null expiry',"UPDATE madising_trial.webauthn_challenges SET expires_at=NULL WHERE id=$1",[challenge],'23502'],
+ ['preference foreign account',"UPDATE madising_trial.account_preferences SET account_id=$2 WHERE account_id=$1",[a.id,missing],'23503'],
+ ['preference null notify',"UPDATE madising_trial.account_preferences SET notify_service=NULL WHERE account_id=$1",[a.id],'23502'],
+ ['preference duplicate account',"INSERT INTO madising_trial.account_preferences(account_id) VALUES($1)",[a.id],'23505'],
+ ['review invalid professional key',"UPDATE madising_trial.care_reviews SET professional_key='CLINICIAN' WHERE id=$1",[review],'23514'],
+ ['review invalid low rating',"UPDATE madising_trial.care_reviews SET rating=0 WHERE id=$1",[review],'23514'],
+ ['review invalid tag',"UPDATE madising_trial.care_reviews SET tags=ARRAY['FREE'] WHERE id=$1",[review],'23514'],
+ ['review excessive tags',"UPDATE madising_trial.care_reviews SET tags=ARRAY['RAMAH','RAMAH','RAMAH','RAMAH','RAMAH'] WHERE id=$1",[review],'23514'],
+ ['review account FK',"UPDATE madising_trial.care_reviews SET account_id=$2 WHERE id=$1",[review,missing],'23503'],
+ ['review exercise FK',"UPDATE madising_trial.care_reviews SET exercise_id=$2 WHERE id=$1",[review,missing],'23503'],
+ ['review duplicate visit professional',"INSERT INTO madising_trial.care_reviews(id,exercise_id,professional_key,account_id,rating) VALUES($1,$2,'NURSE_X',$3,5)",[missing,a.exercise_id,a.id],'23505']
+ ];
+ for(const [name,statement,params,expected] of checks)await assert.rejects(trial.pool.query(statement,params),e=>e.code===expected,name);
+ console.log('Independent access constraint cases rejected:',checks.length);
+});

@@ -23,6 +23,9 @@ try{
  const first=await enroll();
  assert.equal((await post(b.ctx,{operation:'passkey_register_verify',...first})).status,401,'other account challenge');
  assert.equal((await post(a.ctx,{operation:'passkey_register_verify',...first})).status,201);
+ const stored=(await pool.pool.query('SELECT * FROM madising_trial.passkeys WHERE credential_id=$1',[first.response.id])).rows[0];
+ assert.ok(Buffer.isBuffer(stored.public_key)&&stored.public_key.length>=32);
+ assert.deepEqual(Object.keys(stored).sort(),['account_id','created_at','credential_id','last_used_at','public_key','sign_count','transports']);
  assert.equal((await post(a.ctx,{operation:'passkey_register_verify',...first})).status,401,'registration replay');
  assert.equal((await post(b.ctx,{operation:'passkeys',remove:first.response.id})).status,404);
  const auth=async()=>{const o=await post(a.ctx,{operation:'passkey_auth_options'});assert.equal(o.status,200);const response=await ceremony(v.page,'get',o.body.options);return {challengeId:o.body.challengeId,response};};

@@ -103,10 +103,10 @@ export class AccessStore {
       const eligible = purpose === 'LOGIN' ? existing.rows[0]?.state === 'ACTIVE' : existing.rowCount === 0;
       // A non-delivered request still occupies the same rate-limit window.
       const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
-      await client.query('UPDATE madising_trial.otp_challenges SET consumed_at=clock_timestamp() WHERE phone_hmac=$1 AND consumed_at IS NULL AND $2::boolean', [phoneHmac, eligible]);
+      await client.query('UPDATE madising_trial.otp_challenges SET consumed_at=clock_timestamp() WHERE phone_hmac=$1 AND consumed_at IS NULL', [phoneHmac]);
       await client.query(
-        `INSERT INTO madising_trial.otp_challenges(id,phone_hmac,purpose,role,code_hmac,expires_at,consumed_at)
-         VALUES($1,$2,$3,$4,$5,clock_timestamp()+make_interval(secs=>$6),CASE WHEN $7::boolean THEN NULL ELSE clock_timestamp() END)`,
+        `INSERT INTO madising_trial.otp_challenges(id,phone_hmac,purpose,role,code_hmac,expires_at,may_verify)
+         VALUES($1,$2,$3,$4,$5,clock_timestamp()+make_interval(secs=>$6),$7)`,
         [randomUUID(), phoneHmac, purpose, purpose === 'REGISTER' ? input.role : null, this.hmac(`${phoneHmac}:${code}`), OTP_POLICY.ttlSeconds, eligible]);
       if (!eligible) return accepted;
       // Sending inside the transaction: a failed delivery leaves no usable challenge.
@@ -128,7 +128,9 @@ export class AccessStore {
       if (!challenge) return { code: 401 };
       const expected = Buffer.from(challenge.code_hmac, 'hex');
       const actual = Buffer.from(this.hmac(`${phoneHmac}:${input.code}`), 'hex');
-      if (!timingSafeEqual(expected, actual)) {
+      // A non-delivered challenge consumes the same attempts but can never issue a session.
+      const matches = timingSafeEqual(expected, actual);
+      if (!matches || !challenge.may_verify) {
         const attempts = challenge.attempts + 1;
         await client.query(
           'UPDATE madising_trial.otp_challenges SET attempts=$2::int,consumed_at=CASE WHEN $2::int>=$3::int THEN clock_timestamp() ELSE NULL END WHERE id=$1',

@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS madising_trial.otp_challenges (
  CHECK((purpose='REGISTER')=(role IS NOT NULL)),
  CHECK(expires_at > created_at)
 );
+-- Keep legacy challenge rows compatible; new undeliverable challenges are explicitly marked false.
+ALTER TABLE madising_trial.otp_challenges ADD COLUMN IF NOT EXISTS may_verify boolean NOT NULL DEFAULT true;
 CREATE INDEX IF NOT EXISTS otp_challenges_phone ON madising_trial.otp_challenges(phone_hmac,created_at DESC);
 
 CREATE TABLE IF NOT EXISTS madising_trial.passkeys (
