@@ -192,3 +192,11 @@ export function applyAutomaticTrialAction(state,role,action,version,now=Date.now
   }
   return result;
 }
+
+/** Expire the current offer using the trusted clock; do not accept an outdated response. */
+export function expireTrialOffer(state,now=Date.now()){
+  if(!state||state.status!=='CONFIRMED'||!state.offer||!Number.isSafeInteger(state.offerExpiresAt)||now<state.offerExpiresAt||state.version>=1000)return state;
+  const result=applyTrialAction(state,'ADM','EXPIRE',state.version,now);
+  if(!result.ok)return state;
+  return {...result.state,records:result.state.records.map(record=>record.version===result.state.version?{...record,role:'SYSTEM'}:record)};
+}
