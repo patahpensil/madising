@@ -113,3 +113,20 @@ test('independent review boundary and nonpatient denial through account tokens',
   assert.equal((await access.careTeam(token)).code,403,role);assert.equal((await access.review(token,{professionalKey:profile,rating:5})).code,403,role);
  }
 });
+
+test('independent verify-response enumeration regression: wrong codes for registered and unknown numbers are indistinguishable',async t=>{
+ const {access,trial}=setup(t);const active=await patient(access);await age(access,active.number);const unknown=phone();
+ const issued=await access.requestOtp({phone:active.number,purpose:'LOGIN'});
+ const ineligible=await access.requestOtp({phone:unknown,purpose:'LOGIN'});assert.equal(ineligible.fixtureCode,undefined);
+ const wrong=String((Number(issued.fixtureCode)+1)%1000000).padStart(6,'0');
+ for(let remaining=4;remaining>=0;remaining--){
+  const a=await access.verifyOtp({phone:active.number,code:wrong});const b=await access.verifyOtp({phone:unknown,code:wrong});
+  assert.deepEqual(a,{code:401,attemptsRemaining:remaining});assert.deepEqual(b,a);
+ }
+ assert.deepEqual(await access.verifyOtp({phone:unknown,code:wrong}),{code:401});
+ await age(access,unknown);await access.requestOtp({phone:unknown,purpose:'LOGIN'});
+ // Simulate an exact guess of a non-delivered challenge in the isolated database.
+ const hmac=access.hmac(normalizeWhatsAppNumber(unknown));
+ await trial.pool.query("UPDATE madising_trial.otp_challenges SET code_hmac=$1 WHERE phone_hmac=$2 AND consumed_at IS NULL",[access.hmac(hmac+':'+wrong),hmac]);
+ const guessed=await access.verifyOtp({phone:unknown,code:wrong});assert.equal(guessed.code,401);assert.equal(guessed.token,undefined);
+});
