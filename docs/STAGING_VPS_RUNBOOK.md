@@ -24,3 +24,8 @@ Create named staging database madising_trial, with separate migration owner and 
 ## Current state
 
 Tunnel object created but inactive; Cloudflare Access not enabled; dedicated origin, private database, hostname and tester access policy not yet available. Lockfiles, actual VPS install and physical network/TLS tests pending. The service files and preflight are templates, not verified on a real host. No billable resource ordered, no production deployment, no RME integration.
+
+
+## Procurement hold — 15 November 2026
+
+Option D selected: defer all VPS/database rental. The configuration above is retained for a future approved deployment. Continue synthetic CI and static preview only. Do not run installation steps against a public host or connect Tunnel while procurement is on hold. CI uses a disposable PostgreSQL instance and a restricted runtime role; it does not demonstrate private-network TLS, actual provider privileges, Access, physical server backup/restore or capacity. Candidate lockfiles are retained as CI artifacts for review, not approved release locks.
