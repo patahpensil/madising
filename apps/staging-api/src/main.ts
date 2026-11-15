@@ -3,6 +3,7 @@ import { Body, Controller, Get, Header, HttpCode, HttpException, Module, Post } 
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AccountStore } from './account-store.mjs';
+import { AccessStore } from './access-store.mjs';
 import { TrialStore } from './trial-store.mjs';
 
 const enabled = process.env.MADISING_TRIAL_ENABLED === '1';
@@ -10,6 +11,53 @@ const enabled = process.env.MADISING_TRIAL_ENABLED === '1';
 class TrialController {
   private readonly store = enabled ? new TrialStore(process.env.TRIAL_DATABASE_URL) : null;
   private readonly accounts=this.store?new AccountStore(this.store.pool):null;
+  private readonly access=this.store&&process.env.MADISING_ACCOUNT_TRIAL==='1'?new AccessStore(this.store.pool):null;
+  private async accessCall(work:(store:AccessStore)=>Promise<{code:number}&Record<string,unknown>>, ok:number[]){
+    if(!this.access)throw new HttpException('disabled',503);
+    const result=await work(this.access).catch(()=>{throw new HttpException('unavailable',503);});
+    if(!ok.includes(result.code))throw new HttpException(result,result.code);
+    return result;
+  }
+  @Post('account/otp/request')
+  @HttpCode(202)
+  @Header('Cache-Control','no-store')
+  otpRequest(@Body() input: any){ return this.accessCall(s=>s.requestOtp(input),[202]); }
+  @Post('account/otp/verify')
+  @HttpCode(200)
+  @Header('Cache-Control','no-store')
+  otpVerify(@Body() input: any){ return this.accessCall(s=>s.verifyOtp(input),[200,202]); }
+  @Post('account/preferences')
+  @HttpCode(200)
+  @Header('Cache-Control','no-store')
+  preferences(@Body() input: any){ return this.accessCall(s=>s.preferences(input?.token,input?.patch),[200]); }
+  @Post('account/passkeys/register/options')
+  @HttpCode(200)
+  @Header('Cache-Control','no-store')
+  passkeyRegisterOptions(@Body() input: any){ return this.accessCall(s=>s.passkeyRegistrationOptions(input?.token),[200]); }
+  @Post('account/passkeys/register/verify')
+  @HttpCode(201)
+  @Header('Cache-Control','no-store')
+  passkeyRegisterVerify(@Body() input: any){ return this.accessCall(s=>s.passkeyRegistrationVerify(input?.token,input),[201]); }
+  @Post('account/passkeys/authenticate/options')
+  @HttpCode(200)
+  @Header('Cache-Control','no-store')
+  passkeyAuthOptions(){ return this.accessCall(s=>s.passkeyAuthenticationOptions(),[200]); }
+  @Post('account/passkeys/authenticate/verify')
+  @HttpCode(200)
+  @Header('Cache-Control','no-store')
+  passkeyAuthVerify(@Body() input: any){ return this.accessCall(s=>s.passkeyAuthenticationVerify(input),[200]); }
+  @Post('account/passkeys')
+  @HttpCode(200)
+  @Header('Cache-Control','no-store')
+  passkeyList(@Body() input: any){ return this.accessCall(s=>s.passkeys(input?.token,input?.remove),[200]); }
+  @Post('account/care-team')
+  @HttpCode(200)
+  @Header('Cache-Control','no-store')
+  careTeam(@Body() input: any){ return this.accessCall(s=>s.careTeam(input?.token),[200]); }
+  @Post('account/reviews')
+  @HttpCode(201)
+  @Header('Cache-Control','no-store')
+  review(@Body() input: any){ return this.accessCall(s=>s.review(input?.token,input),[201]); }
   @Get('healthz')
   @Header('Cache-Control', 'no-store')
   health() { return { status:'ok', mode:'synthetic-only', clinicalData:false }; }
@@ -21,6 +69,7 @@ class TrialController {
     if(process.env.MADISING_ACCOUNT_TRIAL==='1'){
       await this.store.pool.query('SELECT 1 FROM madising_trial.accounts LIMIT 1').catch(()=>{throw new HttpException('not_ready',503);});
       await this.store.pool.query('SELECT 1 FROM madising_trial.account_sessions LIMIT 1').catch(()=>{throw new HttpException('not_ready',503);});
+      await this.store.pool.query('SELECT 1 FROM madising_trial.otp_challenges LIMIT 1').catch(()=>{throw new HttpException('not_ready',503);});
     }
     return { status:'ready', mode:'synthetic-only' };
   }
@@ -83,7 +132,7 @@ class TrialController {
 class AppModule {}
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger:['error','warn'], bodyParser:false });
-  app.useBodyParser('json',{limit:'4kb'});
+  app.useBodyParser('json',{limit:'8kb'});
   app.enableShutdownHooks();
   await app.listen(3001,'127.0.0.1');
 }
