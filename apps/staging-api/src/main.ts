@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { Body, Controller, Get, Header, HttpCode, HttpException, Module, Post } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { TrialStore } from './trial-store.mjs';
 
 const enabled = process.env.MADISING_TRIAL_ENABLED === '1';
@@ -41,7 +42,7 @@ class TrialController {
 @Module({controllers:[TrialController]})
 class AppModule {}
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { logger:['error','warn'], bodyParser:false });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger:['error','warn'], bodyParser:false });
   app.useBodyParser('json',{limit:'4kb'});
   app.enableShutdownHooks();
   await app.listen(3001,'127.0.0.1');
