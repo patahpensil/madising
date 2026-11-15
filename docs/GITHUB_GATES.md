@@ -3,7 +3,7 @@
 **Status:** panduan konfigurasi. Berkas ini tidak otomatis mengaktifkan ruleset,
 environment approval, review, staging, atau deployment produksi.
 
-## 1. Alur PR yang sekarang
+## 1. Riwayat PR sebelum konsolidasi (15 November 2026)
 
 - PR #1: `chore/initial-foundation` → `main` (Draft; fondasi + PRD V1.4.0).
 - PR #3: `feature/identity-authz-baseline` → `chore/initial-foundation` (Draft; identitas dan keamanan).
@@ -21,12 +21,15 @@ Jika fitur private-repository rulesets/required checks belum tersedia pada
 paket GitHub, catat keterbatasan dan wajibkan persetujuan manual lewat PR.
 File dokumentasi dan status CI saja bukan pengganti perlindungan branch.
 
+PR #1, #3, #4, #6, #7, #8, #9 sudah digabung ke main untuk baseline pengembangan sintetis; tidak mengesahkan OPEN-12/18. Main belum dilindungi.
+
 Required check/job yang saat ini tersedia:
 - `Foundation API tests`
 - `Flutter static analysis and tests`
 - `PostgreSQL identity schema and constraints`
 - `Reject tracked credentials and patient exports`
 - `Locked requirements recorded`
+- `NestJS Next.js PostgreSQL synthetic integration`
 
 **Settings → Environments:** siapkan `staging` dan `production` terpisah.
 Staging menggunakan data sintetis saja. `production` memerlukan manual

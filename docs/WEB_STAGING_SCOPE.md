@@ -1,0 +1,7 @@
+# Web staging scope — 15 November 2026
+
+Directive: continue all non-RME development; defer RME and SATUSEHAT integration to its separate authorized workstream. OPEN-04 and clinical record classification remain open and are production blockers, not waived. No RME API or FHIR credentials are requested, generated or sent. Synthetic documentation completion is only a trial state and must never represent actual RME reconciliation.
+
+For Web First, temporary trial policy uses a 120-second offer lifetime, 120-second position freshness, 10 km straight-line shortlist and 5-second patient/nurse refresh during travel. These are synthetic test parameters, not approved operational settings or a true Sidrap geofence. Coordinates and eligibility are fixtures. Actual staff identities, OIDC, licenses, PostGIS, authoritative boundaries, transport and service provider approvals are still required. The trial role chooser receives separate per-role tokens as a test harness; it is not staff signup or a production login. No actual audio/video media, real prescriptions, financial transactions or real patient data.
+
+Cloudflare connection did not identify an eligible linked account. Branch protection modification is unavailable through the connected GitHub actions. Deployment requires an authorized Cloudflare account, a restricted origin and isolated database; no resources purchased or published. Prepare manual-origin steps and require Cloudflare Access before opening a shared trial. No automatic production release.

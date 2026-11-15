@@ -49,3 +49,8 @@ Pilot target: implementation with budget ceilings under evaluation (Rp30 million
 ## Approved development choices — 15 November 2026
 
 See [decision record](DEVELOPMENT_DECISIONS_2026-11-15.md). These choices supersede conflicting technical/product statements, not clinical or data authorization gates.
+
+
+## Web First scope adjustment
+
+RME and SATUSEHAT implementation deferred to separate workstream at project direction. All clinical/data/legal release gates remain. See [scope update](WEB_STAGING_SCOPE.md).
