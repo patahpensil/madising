@@ -1,7 +1,7 @@
 # MADISING — Implementasi awal AuthN/AuthZ (R0 → R1)
 
 Status: **implementasi baseline, belum siap pasien nyata**.
-Referensi produk: [PRD V1.4.0](PRD_V1.4.0.md) dan prototipe V1.3.7.
+Referensi produk: [PRD V1.4.2](PRD_V1.4.2.md) dan prototipe alur inti V1.4.2.
 
 ## Identity boundary / prinsip keamanan
 
@@ -24,6 +24,16 @@ Referensi produk: [PRD V1.4.0](PRD_V1.4.0.md) dan prototipe V1.3.7.
 | admin | ADM/OWN | ACTIVE, MFA; operasi tanpa akses PHI bebas |
 
 Vendor \`VEN\` bukan dashboard ketujuh. Endpoint \`/api/v1/vendor/status\` hanya metadata teknis tersanitasi.
+
+## Klarifikasi pemisahan tiga pihak (V1.4.1)
+
+- Owner adalah dokter/PJ Klinis; konteks `OWN` (dan `ADM` bila dipakai) harus menggunakan akun berjenis `INTERNAL` yang **terpisah** dari akun `CLINICIAN` untuk role `DOC`. Hanya akun DOC dengan relasi perawatan sah dapat menggunakan hak klinis.
+- Admin harian adalah **satu akun `INTERNAL` role `ADM`**, dipegang tenaga medis yang ditunjuk Owner. Admin tidak otomatis mendapatkan akses PHI melalui role ADM.
+- `ROLE_ACCOUNT_KIND` di `apps/api/src/authz.mjs` menolak izin runtime apabila jenis akun dan role tidak cocok. **Perbaikan pada PR #3 (masih Draft):** migrasi `001_identity_authz.sql` sekarang menambahkan trigger DB untuk menolak binding role yang tidak sesuai jenis akun dan melarang perubahan `accounts.kind` secara diam-diam; negative smoke test juga ditambahkan. Karena belum merge ke `main`, ini belum merupakan pengamanan produksi. Pemeriksaan provisioning, kredensial, dan review keamanan sistem masih wajib.
+- Scope `CCO` pada Admin **belum diimplementasikan**. Owner dapat memberi scope tersebut nanti setelah perancangan dan pengujian; untuk sekarang Admin tanpa CCO tidak berhak mengambil keputusan kelayakan klinis awal atau mengakses PHI bebas.
+- **Cakupan CCO pada matriks PRD §3.3:** hanya Admin ber-role `ADM` yang **secara eksplisit diberi scope `CCO` oleh Owner** boleh membaca **data triase/keluhan minimum yang diperlukan** untuk penilaian kelayakan klinis awal di `ADMIN_REVIEW`, dengan audit. Scope ini **bukan** akses diagnosis, instruksi, resep, foto klinis bebas, atau RME. Baris **Asesmen & dokumentasi perawatan** dan **Diagnosis/instruksi/resep** bagi ADM/OWN tetap `—`. **Belum diimplementasikan di API** sehingga tidak boleh diasumsikan sebagai akses yang sudah tersedia.
+- Vendor Patah Pensil adalah pihak eksternal: akun `VENDOR`/`VEN`, tanpa role `ADM/OWN`, tanpa akses PHI default. Dalam CR-TECH-01, Patah Pensil memutuskan operasi teknis melalui gerbang CI/review/audit; Owner tidak menjadi approver per konfigurasi teknis. **Perubahan persetujuan historis masih memerlukan penyelesaian OPEN-12/OPEN-18**. JIT/restore yang membuka PHI atau memengaruhi catatan klinis tetap memerlukan dasar serta otorisasi sah pengendali data; role VEN tidak mewarisi akses rekam medis.
+
 
 ## Matriks izin teruji (fungsi murni)
 
@@ -54,3 +64,21 @@ Migration \`infra/postgres/migrations/001_identity_authz.sql\` menyiapkan \`acco
 4. Implementasikan provisioning staf yang hanya bisa dilakukan Admin setelah evidence/approval klinis; undangan sekali pakai tanpa password dikirim Admin.
 5. Pengujian integrasi pada PostgreSQL staging, MFA, expired token, account revocation, race/IDOR, dan audit.
 6. Uji keamanan independen, DPIA dan sign-off klinis sebelum data pasien nyata.
+
+## Izin target klinis dan dispatch V1.4.2 — belum diimplementasikan
+
+| Action target | Izin server |
+|---|---|
+| offer.read/respond | NRS eligible, penawaran sendiri, data minimum; expiry/revocation dicek |
+| assignment.accept | NRS eligible, penawaran sah, reservasi atomik; tidak menerima booking ganda |
+| location.publish | NRS sendiri, tujuan/shift/tugas sah, izin lokasi dan session aktif |
+| travel.location.read | PAT/kuasa sah, booking sendiri, assigned dan EN_ROUTE; ADM hanya minimum sesuai kebijakan |
+| nursing.diagnosis/plan/evaluation.write | NRS berwenang, encounter assigned, versi kebijakan sah |
+| clinical.medical_diagnosis/therapy.write | DOC berwenang, clinical relationship |
+| clinical.order.sign/revoke | DOC berwenang, relasi sah; order/version dan alasan diaudit |
+| clinical.mandate.sign | DOC pemberi berwenang; SOP khusus, penerima kompeten, bukti tertulis dan pengawasan |
+| clinical.procedure.start | NRS assigned; recheck CLA-01..06, consent, kompetensi, order/mandat bila diperlukan |
+| clinical.mandate.report | NRS penerima, encounter terkait; DOC pemberi review |
+| clinical.delegation.create | Tolak seluruh role pada R1 |
+
+Semua role lain ditolak kecuali izin eksplisit pada PRD. UAT-34..47 merupakan target, bukan bukti pengujian. Tidak menambah role/dashboard atau PHI untuk Admin/Vendor.

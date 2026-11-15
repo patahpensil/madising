@@ -2,21 +2,28 @@
 
 ## Approach
 
-A modular monolith is the intended target: Flutter on Android/iOS, web in Next.js, API in NestJS, PostgreSQL/PostGIS, private clinical media storage, and integration adapters for existing RME, pharmacy and courier. Specific cloud provider, capacity, and release contracts are **not yet approved**.
+Rancangan awal berupa modular monolith: Flutter Android/iOS, web responsif, API modular, PostgreSQL/PostGIS, private clinical media storage serta adapter RME/SATUSEHAT/apotek/kurir. **OPEN-13 diputuskan:** NestJS/TypeScript dan Next.js, PostgreSQL/PostGIS. Cloudflare sebagai edge staging dengan backend dan database terpisah. Penyedia cloud, penempatan data, dan kontrak pemrosesan belum final; pilihan teknis Vendor harus mematuhi otorisasi pengendali data.
 
-This commit provides only a dependency-free Node.js health service, static web foundation, Flutter starter, and CI. It does NOT implement NestJS/Next.js, identity, RME integration, or production data services.
+Baseline kode saat ini menggunakan **Node `.mjs` tanpa framework** untuk API healthcheck, policy otorisasi awal dan adapter lookup identitas PostgreSQL; frontend web masih statis dan Flutter masih skeleton. Verifikasi OIDC runtime, signup/undangan nyata, NestJS/Next.js, RME integration dan layanan produksi belum aktif. Baseline `.mjs` dipertahankan untuk regression test selama port bertahap; aplikasi staging baru terpisah dan tanpa data nyata.
 
 ## Logical modules (planned)
 
 - **Identity**: patient/courier signup and verification; Admin-provisioned clinical and pharmacy accounts; MFA for privileged users; RBAC + assignment-based ABAC on every request.
-- **Care**: service requests, triage, location verification, dispatch, visit, doctor consultation, clinical directives, patient consent, nurse documentation.
+- **Care**: service requests, triage, location verification, dispatch (offers, expiry, atomic assignment), visit, doctor consultation, clinical directives, patient consent, nursing diagnosis/plan/evaluation.
+- **Clinical Authority**: policy module dalam monolith untuk kewenangan per tindakan, consent, order/mandat, recheck saat eksekusi dan audit; delegasi nonaktif R1; tidak membuat keputusan medis.
+- **Travel**: PostGIS shortlist, provider rute/ETA, scoped realtime EN_ROUTE via WebSocket/SSE atau transport setara, fallback; Redis hanya jika kebutuhan terbukti. OPEN-20 menetapkan privasi dan retensi lokasi.
 - **Medication**: doctor-signed prescriptions, pharmacist review, pharmacy order, courier task, temperature constraints where applicable, proof of delivery.
 - **Operations**: Admin/Owner, workforce credentialing, billing, reports and immutable audit events.
-- **Vendor**: operational metrics and incident tooling without routine clinical-data access.
+- **Vendor**: operational metrics, deployment, incident tooling and technical security without routine clinical-data access.
+- **Interoperability**: `clinical_adapter` untuk RME existing; `satusehat_adapter` untuk mapping HL7 FHIR R4 bila jalur resmi/akses memungkinkannya; queue/outbox, idempotency, reconciliation dan audit metadata. Kedua jalur dievaluasi pada OPEN-04; tidak ada Production integration yang aktif.
 
 ## High-level request path
 
 Flutter/Web → TLS/edge controls → authenticated API → policy checks → scoped domain module → PostgreSQL and private object storage. Third-party adapters exchange only the minimum required data. Event queues should retry idempotently; no clinical record should be silently dropped.
+
+## SATUSEHAT R0 decision path
+
+Pilihan A (preferensi bersyarat): gunakan RME existing yang mempunyai API/prosedur bridging sah dan sudah/akan diintegrasikan fasyankes. Pilihan B: Patah Pensil menguji integrasi langsung jika syarat registrasi sistem RME/partner dan wewenang fasyankes terpenuhi. Keduanya harus menggunakan identitas fasyankes yang benar dan konfigurasi Production yang sah; Vendor tidak otomatis memiliki Production API key. Patah Pensil menangani mapping FHIR, mock/Sandbox, vault dan contract tests tanpa PHI asli. Lihat [SATUSEHAT_INTEGRATION_PLAN.md](SATUSEHAT_INTEGRATION_PLAN.md).
 
 ## Data protection
 
@@ -24,4 +31,7 @@ Use a production-approved provider with verified data-processing contracts, encr
 
 ## Release safety
 
-Branch PR → tests/review → staging with synthetic data → approved production release → monitoring and rollback. App Store/Play publication must be separately approved. No live deployment is configured in this baseline.
+Branch PR → tests/review → staging sintetis → keputusan rilis teknis Patah Pensil melalui gerbang kontrol/audit → monitoring dan rollback. Kesiapan pelayanan klinis serta penggunaan data pasien tetap memerlukan otorisasi institusional yang sah. App Store/Play publication mengikuti persyaratan platform. No live deployment is configured in this baseline.
+
+
+Web First: Cloudflare Tunnel/Access → Next.js origin → NestJS origin → private PostgreSQL. Trial only uses synthetic session schema. No live edge configuration is active. Sequential offers, post-service billing, text/audio/video consultation scope follow [decision record](DEVELOPMENT_DECISIONS_2026-11-15.md).
