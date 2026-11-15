@@ -40,6 +40,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.47.9'
           cache: true
       - name: Resolve dependencies
         run: flutter pub get
@@ -61,3 +62,124 @@ jobs:
           grep -q 'ACCOUNT-LOCK' docs/DECISIONS.md
           grep -q 'STAFF-LOCK' docs/DECISIONS.md
           grep -q 'VENDOR-MAINTENANCE' docs/DECISIONS.md
+
+
+  database-migration:
+    name: PostgreSQL identity schema and constraints
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: madising_ci
+          POSTGRES_PASSWORD: synthetic-test-only
+          POSTGRES_DB: madising_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U madising_ci -d madising_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGPASSWORD: synthetic-test-only
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client if unavailable
+        shell: bash
+        run: |
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y postgresql-client
+          fi
+      - name: Apply migration (synthetic CI database only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -h 127.0.0.1 -U madising_ci -d madising_ci \
+            -v ON_ERROR_STOP=1 -f infra/postgres/migrations/001_identity_authz.sql
+          psql -X -h 127.0.0.1 -U madising_ci -d madising_ci \
+            -v ON_ERROR_STOP=1 -f infra/postgres/migrations/001_identity_authz.sql
+      - name: Verify database negative security constraints
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -h 127.0.0.1 -U madising_ci -d madising_ci \
+            -v ON_ERROR_STOP=1 -f infra/postgres/tests/001_identity_authz_smoke.sql
+
+  repository-hygiene:
+    name: Reject tracked credentials and patient exports
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect tracked file paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -E '(^|/)(secrets|patient-exports|clinical-uploads)(/|$)|(^|/)\.env($|[./])|\.(pem|p8|key|keystore|jks)$'; then
+            echo 'Forbidden secret or clinical-export path is tracked.'
+            exit 1
+          fi
+      - name: Detect recognizable credentials in tracked text
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This heuristic is defense in depth, not a substitute for dedicated scanning.
+          if git grep -I -n -E -e '-----BEGIN (RSA |EC |OPENSSH |)?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-Z]{16}|sk_live_[A-Za-z0-9]{16,}' -- .; then
+            echo 'Recognizable credential-like content is tracked.'
+            exit 1
+          fi
+
+  staging-stack:
+    name: NestJS Next.js PostgreSQL synthetic integration
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: trial_ci
+          POSTGRES_PASSWORD: synthetic-ci-only
+          POSTGRES_DB: trial_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U trial_ci -d trial_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      TRIAL_DATABASE_URL: postgresql://trial_ci:synthetic-ci-only@127.0.0.1:5432/trial_ci
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply isolated trial migration
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+          psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/001_sessions.sql
+      - name: Install and verify API
+        run: |
+          npm --prefix apps/staging-api install --no-audit --no-fund
+          npm --prefix apps/staging-api run build
+          npm --prefix apps/staging-api test
+      - name: Build Next.js
+        run: |
+          npm --prefix apps/staging-web install --no-audit --no-fund
+          npm --prefix apps/staging-web run build
+      - name: Verify HTTP boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          MADISING_TRIAL_ENABLED=1 npm --prefix apps/staging-api start > /tmp/madising-api.log 2>&1 &
+          api=$!
+          trap 'kill "$api" 2>/dev/null || true' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3001/readyz; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3001/readyz
+          curl -fsS -X POST http://127.0.0.1:3001/trial/sessions -H 'Content-Type: application/json' -d '{}' > /tmp/madising-session.json
+          node -e 'const s=require("/tmp/madising-session.json");if(s.state.status!=="DRAFT"||s.state.version!==0||!s.token)process.exit(1)'

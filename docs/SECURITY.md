@@ -13,7 +13,7 @@
 7. Independent security review and penetration testing (including IDOR/BOLA, uploads, geofence bypass, role isolation, abuse/rate-limits).
 8. Incident runbooks, access revocation and software supply-chain monitoring.
 9. Clinical safety acceptance: only qualified staff assigned; doctor decisions appropriately signed; prescriptions verified by pharmacist.
-10. Owner-approved production deployment. No automatic production push from arbitrary branch.
+10. Patah Pensil memegang otorisasi teknis build/deploy/patch/restore melalui kontrol perubahan, review, CI dan audit; Owner tidak perlu menyetujui perintah teknis tiap deployment. Akses data pasien, perubahan tujuan pemrosesan dan go-live klinis tetap memerlukan otorisasi pihak MADISING yang berwenang. CR-TECH-01 harus dituntaskan sebelum menggantikan persetujuan historis; jangan pernah membuat automatic production push dari branch sembarang.
 
 ## Current limitations
 
