@@ -1,28 +1,54 @@
 <!doctype html>
-<html lang="id">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>MADISING | Uji alur pelayanan</title>
-<style>
-:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f8f5;color:#172a27;--brand:#123f3a;--action:#176b5b;--muted:#53635e;--line:#dce4df}*{box-sizing:border-box}body{margin:0;font-size:15px;line-height:1.5}button{font:inherit;min-height:48px;cursor:pointer;border:1px solid transparent;border-radius:12px;padding:11px 16px;font-weight:650;text-align:left}button:focus-visible{outline:3px solid #976a2c;outline-offset:3px}.primary{background:var(--action);color:#fff}.secondary{background:#fff;border-color:var(--line);color:var(--brand)}h1,h2,h3,p{margin:0}h1{font-size:28px;line-height:1.2;font-weight:700;letter-spacing:-.6px}h2{font-size:19px;line-height:1.35}h3{font-size:16px}.muted{color:var(--muted);font-size:14px}.shell{max-width:1200px;min-height:100vh;margin:auto}.notice{padding:10px 24px;background:#e5eee8;color:#294b42;font-size:13px;border-bottom:1px solid var(--line)}.layout{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:calc(100vh - 42px)}aside{background:#fff;border-right:1px solid var(--line);padding:24px 18px;display:flex;flex-direction:column;gap:24px}.brand{font-size:21px;font-weight:750;letter-spacing:1.2px;color:var(--brand)}.caption{font-size:13px;color:var(--muted)}nav{display:grid;gap:5px}nav button{background:#fff;color:var(--muted);padding:11px 14px}nav button[aria-pressed=true]{background:#e7f0eb;color:var(--brand)}#reset{margin-top:auto}.main{padding:30px 32px;min-width:0}.content{max-width:740px;display:grid;gap:18px;margin:0 auto}.heading{display:grid;gap:6px}.hero{background:var(--brand);color:white;border-radius:16px;padding:24px;display:grid;gap:12px}.hero p{color:#e2eee8}.hero .primary{background:#fff;color:var(--brand);justify-self:start}.panel{padding:20px;border:1px solid var(--line);border-radius:14px;background:white;display:grid;gap:14px;min-width:0}.scenario-list{display:grid;gap:8px}.choice{display:flex;justify-content:space-between;gap:12px;align-items:center;background:white;border-color:var(--line);color:#172a27;font-weight:500}.choice span{font-size:13px;color:var(--muted)}.choice[aria-pressed=true]{border-color:var(--action);background:#edf5ef}.status{display:flex;gap:9px;align-items:center;font-weight:650;color:var(--brand)}.status-dot{width:10px;height:10px;border-radius:50%;background:#176b5b;flex:none}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.steps>div,.audit>div{padding:12px 0;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;align-items:flex-start}.steps strong,.audit span{color:var(--muted);font-weight:500;font-size:13px;text-align:right}.steps>div:last-child,.audit>div:last-child{border-bottom:0}.map{overflow:hidden;border:1px solid var(--line);border-radius:12px}.map svg{display:block;width:100%;max-height:260px}.map-caption{padding:9px 12px;font-size:13px;color:var(--muted)}.warning{padding:12px;border:1px solid #e8d5b7;background:#fff5e6;border-radius:12px;color:#67461e}#message{max-width:740px;margin:16px auto;color:var(--muted);font-size:14px;min-height:22px}.foot{max-width:740px;margin:20px auto;color:var(--muted);font-size:13px}@media(max-width:700px){.notice{padding:10px 16px}.layout{display:block;min-height:0}aside{padding:16px;border-right:0;border-bottom:1px solid var(--line);gap:12px}.brand{font-size:19px}nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}nav button{padding:10px 8px;text-align:center;font-size:13px;overflow-wrap:anywhere}#reset{margin:0;align-self:flex-start;min-height:48px}.main{padding:22px 16px}.panel{padding:16px}.hero{padding:20px}h1{font-size:26px}.actions{grid-template-columns:1fr}.choice{gap:8px}}
-</style>
-</head>
-<body>
-<div class="shell"><div class="notice">Lingkungan uji · Data sintetis · Tidak terhubung ke layanan kesehatan</div><div class="layout"><aside><div><div class="brand">MADISING</div><p class="caption">Uji alur pelayanan Sidrap</p></div><nav id="role-selector" aria-label="Pilih peran simulasi"><button data-role="PAT" aria-pressed="true">Pasien</button><button data-role="NRS" aria-pressed="false">Perawat</button><button data-role="DOC" aria-pressed="false">Dokter</button><button data-role="PHA" aria-pressed="false">Apotek</button><button data-role="CUR" aria-pressed="false">Kurir</button><button data-role="ADM" aria-pressed="false">Admin</button></nav><button id="reset" class="secondary">Ulangi skenario</button></aside><main class="main"><div id="workspace"></div><p id="message" role="status" aria-live="polite"></p><p class="foot">Pemilihan peran hanya berlaku pada uji ini. Tidak ada akun nyata, lokasi aktual, resep, pembayaran atau penyimpanan data pasien.</p></main></div></div>
-<script id="trial-model">
-function initialTrial() {
-  return {version:0, status:'DRAFT', scenario:'INDEPENDENT', offer:null, assigned:null, declined:[], available:true, order:'NONE', assessed:false, planned:false, performed:false, evaluated:false, prescription:'NONE', delivery:'NONE', records:[]};
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>MADISING | Uji pelayanan</title><style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172a27;background:#f7f8f5;--brand:#123f3a;--action:#176b5b;--muted:#53635e;--line:#dce4df;--surface:#fff}*{box-sizing:border-box}body{margin:0;font-size:15px;line-height:1.5}h1,h2,h3,p{margin:0}h1{font-size:28px;line-height:1.2;letter-spacing:-.6px}h2{font-size:20px;line-height:1.35}h3{font-size:16px}button{font:inherit;min-height:48px;border:1px solid transparent;border-radius:12px;padding:12px 16px;font-weight:650;cursor:pointer;background:white;color:var(--brand);text-align:left;max-width:100%}button:hover{border-color:var(--action)}button:disabled{opacity:.6;cursor:not-allowed}button:focus-visible,a:focus-visible{outline:3px solid #976a2c;outline-offset:3px}.primary{background:var(--action);color:white}.secondary{border-color:var(--line)}.muted,.caption{color:var(--muted);font-size:14px}.notice{padding:8px 20px;background:#e5eee8;color:#294b42;font-size:13px;text-align:center}.shell{min-height:100vh}.layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:calc(100vh - 36px)}aside{padding:24px 18px;background:white;border-right:1px solid var(--line);display:grid;align-content:start;gap:16px}.brand{font-size:22px;letter-spacing:1.2px;font-weight:750;color:var(--brand)}.current-role{font-size:18px;font-weight:650;padding:12px 0;border-top:1px solid var(--line)}nav{display:grid;gap:6px}nav button[aria-pressed=true],button[aria-pressed=true]{background:#e7f0eb;color:var(--brand);border-color:var(--action)}main{padding:28px 24px;max-width:1000px;width:100%;margin:0 auto;display:grid;align-content:start;gap:16px}.panel,.hero{display:grid;gap:12px;background:white;border:1px solid var(--line);border-radius:14px;padding:20px;min-width:0}.hero{background:var(--brand);color:white;border-color:var(--brand)}.hero button{justify-self:start}.actions{display:flex;flex-wrap:wrap;gap:8px}.warning{color:#67461e;background:#fff5e6;padding:12px;border-radius:12px}.tracking{display:grid;gap:8px;padding:12px;background:#eef3ec;border-radius:12px}@media(max-width:900px){.layout{display:block;min-height:0}aside{padding:16px;border-right:0;border-bottom:1px solid var(--line);gap:8px;grid-template-columns:1fr auto;align-items:center}aside .muted{grid-column:1/-1}aside nav{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr))}aside .current-role{border:0;padding:0}main{padding:20px 16px}.actions{display:grid}.panel,.hero{padding:16px}h1{font-size:26px}}
+body{padding-bottom:env(safe-area-inset-bottom)}.preview-shell{max-width:1360px;margin:auto}.header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;background:#fff;border-bottom:1px solid var(--line)}.header .brand{display:flex;gap:10px;align-items:center}.mark{width:34px;height:34px;border-radius:10px;background:var(--brand);display:grid;place-items:center;color:white;flex:none}.mark svg,.glyph svg{width:21px;height:21px}.header button{font-size:14px;padding:8px 12px}.entry{max-width:960px;margin:auto;padding:36px 24px;display:grid;gap:20px}.entry-lead{max-width:560px;display:grid;gap:8px}.entry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.entry-card{border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:12px;background:white;text-align:left;min-height:148px}.entry-card strong{font-size:18px}.entry-card .muted{font-weight:400}.glyph{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#e7f0eb;color:var(--brand);flex:none}.workspace{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:calc(100vh - 112px)}.side{display:grid;align-content:start;gap:12px;padding:22px 16px;border-right:1px solid var(--line);background:#fff}.role-identity{display:grid;gap:4px;padding:8px 4px 18px;border-bottom:1px solid var(--line)}.role-identity strong{font-size:18px}.side nav{gap:4px}.side nav button,.bottom button{display:flex;align-items:center;gap:10px;font-weight:550}.side nav button[aria-current=page],.bottom button[aria-current=page]{background:#e7f0eb;color:var(--brand)}.side nav svg,.bottom svg,.action-icon svg{width:20px;height:20px;flex:none}.workspace main{max-width:1100px;min-width:0}.heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.heading-copy{display:grid;gap:5px}.heading .glyph{width:48px;height:48px}.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.45fr);gap:16px;align-items:start}.full{grid-column:1/-1}.row-line{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:12px 0}.row-line:last-child{border-bottom:0}.row-line span:last-child{text-align:right}.status{display:inline-flex;align-items:center;gap:8px;color:var(--brand);font-weight:650}.status:before{content:"";width:9px;height:9px;background:var(--action);border-radius:50%;flex:none}.status.pending:before{background:#a46c26}.empty{display:grid;justify-items:start;gap:8px;padding:14px 0;color:var(--muted)}.empty .glyph{background:#f0f3ef;color:#53635e}.hero-book{display:grid;grid-template-columns:1fr 110px;align-items:center;gap:12px;background:var(--brand);color:white;padding:24px;border-radius:16px}.hero-book p{color:#e1eee8;margin:8px 0 16px}.hero-book .primary{background:white;color:var(--brand)}.hero-book svg{width:100%;height:auto}.choices{display:grid;gap:8px}.choice{display:flex;align-items:center;justify-content:space-between;gap:12px;border-color:var(--line);font-weight:500}.choice span{font-size:13px;color:var(--muted)}.services{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.service{display:flex;gap:10px;align-items:center;padding:10px 0}.service strong{font-size:14px}.service small{display:block;color:var(--muted);font-size:13px}.timeline{list-style:none;margin:0;padding:0;display:grid;gap:0}.timeline li{position:relative;padding:6px 0 15px 28px;color:var(--muted)}.timeline li:before{content:"";position:absolute;left:5px;top:12px;width:9px;height:9px;background:#dce4df;border-radius:50%;outline:3px solid white;z-index:1}.timeline li:not(:last-child):after{content:"";position:absolute;left:9px;top:17px;bottom:-10px;width:1px;background:var(--line)}.timeline li.done:before,.timeline li.current:before{background:var(--action)}.timeline li.current{font-weight:700;color:var(--brand)}.timeline li.done{color:#172a27}.map{border:1px solid var(--line);border-radius:14px;overflow:hidden}.map svg{display:block;width:100%;height:auto;max-height:320px;background:#e7ede3}.map p{padding:12px;background:white}.queue{display:grid;gap:8px}.queue-item{padding:14px;border:1px solid var(--line);border-radius:12px;display:grid;gap:6px}.queue-item.active{border-color:var(--action);background:#f2f7f2}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:13px;color:var(--muted);font-weight:600}.foot{font-size:13px;color:var(--muted);padding:12px 0}.bottom{display:none}.record{display:grid;gap:6px}.record .row-line{font-size:14px}.notice-status{min-height:22px;font-size:14px;color:var(--muted)}@media(max-width:1000px){.workspace{grid-template-columns:170px minmax(0,1fr)}.split{grid-template-columns:1fr}.services{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:900px){.workspace{display:block}.side{display:none}.header{padding:12px 16px}.header .brand{font-size:19px}.entry{padding:24px 16px}.entry-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.entry-card{padding:14px;min-height:140px}.workspace main{padding-bottom:90px}.bottom{display:flex;position:fixed;bottom:0;left:0;right:0;justify-content:space-around;gap:2px;padding:5px 8px calc(5px + env(safe-area-inset-bottom));background:white;border-top:1px solid var(--line);z-index:3}.bottom button{flex:1;flex-direction:column;justify-content:center;gap:2px;padding:5px 4px;font-size:12px;text-align:center;min-width:0;overflow-wrap:anywhere}.bottom svg{width:22px;height:22px}.notice{font-size:12px}.hero-book{grid-template-columns:1fr 80px;padding:18px}.services{gap:8px}.service .glyph{width:36px;height:36px}.heading-copy h1{font-size:26px}}@media(max-width:370px){.header .brand{font-size:16px}.header button{font-size:12px;padding:8px}.entry-card strong{font-size:16px}.services{grid-template-columns:1fr}.hero-book{grid-template-columns:1fr}.hero-book>svg{display:none}}
+</style></head><body><div class="notice">Lingkungan uji · Data sintetis · Tidak untuk pelayanan nyata</div><div class="preview-shell" id="app"></div><script id="trial-model">
+// Trial coordinates are synthetic, not authoritative Sidrap boundaries or live tracking.
+function distanceMeters(a,b) {
+  const valid = (p) => p && Number.isFinite(p.lat) && Number.isFinite(p.lon) && Math.abs(p.lat)<=90 && Math.abs(p.lon)<=180;
+  if (!valid(a)||!valid(b)) return null;
+  const rad=Math.PI/180, dLat=(b.lat-a.lat)*rad,dLon=(b.lon-a.lon)*rad;
+  const h=Math.sin(dLat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLon/2)**2;
+  return Math.round(6371000*2*Math.asin(Math.sqrt(Math.max(0,Math.min(1,h)))));
 }
-function advanceTrial(state, role, action, expectedVersion) {
+function rankCandidates(candidates, destination, now, excluded = []) {
+  if (!Number.isSafeInteger(now)||!Array.isArray(candidates)||candidates.length>100||!Array.isArray(excluded)) return [];
+  const seen=new Set();
+  return candidates.flatMap(c=>{
+    if (!c||typeof c.id!=='string'||!c.id||seen.has(c.id)||excluded.includes(c.id)||
+      c.credentialVerified!==true||c.competent!==true||c.available!==true||c.covered!==true||
+      !Number.isSafeInteger(c.updatedAt)||c.updatedAt>now||now-c.updatedAt>120000) return [];
+    const meters=distanceMeters(c.location,destination);
+    if(meters===null||meters>10000)return [];
+    seen.add(c.id);
+    return [{id:c.id,meters}];
+  }).sort((a,b)=>a.meters-b.meters||(a.id<b.id?-1:a.id>b.id?1:0));
+}
+const trialDestination=Object.freeze({lat:-3.84,lon:119.81});
+const trialPositions=Object.freeze([
+  Object.freeze({lat:-3.845,lon:119.805}),
+  Object.freeze({lat:-3.842,lon:119.808}),
+  Object.freeze({lat:-3.8405,lon:119.8095})
+]);
+function trialCandidates(now) {
+  return [
+    {id:'NURSE_A',location:{lat:-3.8401,lon:119.8101},credentialVerified:true,competent:false,available:true,covered:true,updatedAt:now},
+    {id:'NURSE_C',location:{lat:-3.850,lon:119.800},credentialVerified:true,competent:true,available:true,covered:true,updatedAt:now},
+    {id:'NURSE_B',location:{lat:-3.845,lon:119.805},credentialVerified:true,competent:true,available:true,covered:true,updatedAt:now}
+  ];
+}
+
+function initialTrial() {
+  return {version:0, status:'DRAFT', scenario:'INDEPENDENT', offer:null, offerExpiresAt:null, assigned:null, declined:[], available:true, order:'NONE', assessed:false, planned:false, performed:false, evaluated:false, prescription:'NONE', delivery:'NONE', records:[]};
+}
+function advanceTrial(state, role, action, expectedVersion, now = Date.now()) {
   const reject = (reason) => ({ok:false,reason,state});
   if (!state || typeof state !== 'object' || !Number.isSafeInteger(expectedVersion) || expectedVersion !== state.version) return reject('STALE');
   if (!['PAT','NRS','DOC','PHA','CUR','ADM'].includes(role)) return reject('ROLE');
   const next = {...state};
   const is = (allowedRole, status) => role === allowedRole && state.status === status;
-  const findOffer = () => ['NURSE_B','NURSE_C'].find(id => !next.declined.includes(id)) ?? null;
-  const setOffer = () => { next.offer = next.available ? findOffer() : null; next.status = next.offer ? 'CONFIRMED' : 'RESCHEDULE_REQUESTED'; };
+  const findOffer = () => rankCandidates(trialCandidates(now),trialDestination,now,next.declined)[0]?.id ?? null;
+  const setOffer = () => { next.offer = next.available ? findOffer() : null; next.offerExpiresAt=next.offer?now+120000:null; next.status = next.offer ? 'CONFIRMED' : 'RESCHEDULE_REQUESTED'; };
   switch (action) {
     case 'INDEPENDENT': case 'MANDATE': case 'EMERGENCY': case 'OUTSIDE': case 'NO_CAPACITY':
       if (!is('PAT','DRAFT')) return reject('STATE_OR_ROLE');
@@ -48,8 +74,8 @@ function advanceTrial(state, role, action, expectedVersion) {
       else setOffer();
       break;
     case 'ACCEPT':
-      if (!is('NRS','CONFIRMED') || !state.offer || state.assigned) return reject('STATE_OR_ROLE');
-      next.assigned=state.offer; next.offer=null; next.status='ASSIGNED'; break;
+      if (!is('NRS','CONFIRMED') || !state.offer || state.assigned || !Number.isSafeInteger(state.offerExpiresAt) || now>=state.offerExpiresAt) return reject('STATE_OR_ROLE');
+      next.assigned=state.offer; next.offer=null; next.offerExpiresAt=null; next.status='ASSIGNED'; break;
     case 'DECLINE':
     case 'EXPIRE':
       if (!is(action==='DECLINE'?'NRS':'ADM','CONFIRMED') || !state.offer) return reject('STATE_OR_ROLE');
@@ -60,7 +86,7 @@ function advanceTrial(state, role, action, expectedVersion) {
       next.available=true; next.declined=[]; next.status='ELIGIBILITY_CHECK'; break;
     case 'CANCEL':
       if (role!=='PAT'||!['REQUESTED','TRIAGE_OK','LOCATION_OK','ELIGIBILITY_CHECK','CONFIRMED','ASSIGNED','EN_ROUTE','RESCHEDULE_REQUESTED'].includes(state.status)) return reject('STATE_OR_ROLE');
-      next.status='CANCELLED_BY_PATIENT'; next.offer=null; next.assigned=null; break;
+      next.status='CANCELLED_BY_PATIENT'; next.offer=null; next.offerExpiresAt=null; next.assigned=null; break;
     case 'DEPART':
       if (!is('NRS','ASSIGNED')||!state.assigned) return reject('STATE_OR_ROLE');
       next.status='EN_ROUTE'; break;
@@ -122,95 +148,220 @@ function advanceTrial(state, role, action, expectedVersion) {
   next.records=[...state.records,{version:next.version,role,action,status:next.status}].slice(-50);
   return {ok:true,reason:'OK',state:next};
 }
-</script>
-<script>
+
+function createTrialState() {
+  return { ...initialTrial(), billing:'NOT_ISSUED', tracking:null, consultation:{messages:[],call:'NONE',channel:null} };
+}
+function applyTrialAction(state, role, action, version, now = Date.now()) {
+  if (!state || !Number.isSafeInteger(version) || version !== state.version) return { ok: false, reason: 'STALE', state };
+  if (action === 'ISSUE_INVOICE' || action === 'SETTLE_INVOICE') {
+    const eligible = state.status === 'COMPLETED' &&
+      ((role === 'ADM' && action === 'ISSUE_INVOICE' && state.billing === 'NOT_ISSUED') ||
+       (role === 'ADM' && action === 'SETTLE_INVOICE' && state.billing === 'ISSUED'));
+    if (!eligible) return { ok:false, reason:'STATE_OR_ROLE', state };
+    const next = { ...state, billing: action === 'ISSUE_INVOICE' ? 'ISSUED' : 'SETTLED', version: version + 1 };
+    next.records = [...state.records, { version:next.version, role, action, status:next.status }].slice(-50);
+    return { ok:true, reason:'OK', state:next };
+  }
+  const reject = () => ({ok:false,reason:'STATE_OR_ROLE',state});
+  const changed = (fields) => {
+    const next={...state,...fields,version:version+1};
+    next.records=[...state.records,{version:next.version,role,action,status:next.status}].slice(-50);
+    return {ok:true,reason:'OK',state:next};
+  };
+  if(action==='LOCATION_STEP'){
+    if(role!=='NRS'||state.status!=='EN_ROUTE'||!state.assigned)return reject();
+    const index=(state.tracking?.index??-1)+1;
+    if(index>=trialPositions.length)return reject();
+    const point=trialPositions[index];
+    return changed({tracking:{index,point,updatedAt:now,meters:distanceMeters(point,trialDestination),source:'SYNTHETIC'}});
+  }
+  if(['MESSAGE_REQUEST','MESSAGE_REPLY','REQUEST_AUDIO','REQUEST_VIDEO','ACCEPT_CALL','END_CALL'].includes(action)){
+    if(!['NRS','DOC'].includes(role)||state.status!=='IN_PROGRESS'||state.order==='NONE'||!state.assigned)return reject();
+    const current=state.consultation??{messages:[],call:'NONE',channel:null};
+    if(action==='MESSAGE_REQUEST'||action==='MESSAGE_REPLY'){
+      if((action==='MESSAGE_REQUEST'&&role!=='NRS')||(action==='MESSAGE_REPLY'&&role!=='DOC')||current.messages.length>=20)return reject();
+      if(action==='MESSAGE_REPLY'&&!current.messages.some(m=>m.role==='NRS'))return reject();
+      return changed({consultation:{...current,messages:[...current.messages,{role,kind:action,at:now}]}});
+    }
+    if(action==='REQUEST_AUDIO'||action==='REQUEST_VIDEO'){
+      if(role!=='NRS'||!['NONE','ENDED'].includes(current.call))return reject();
+      return changed({consultation:{...current,call:'REQUESTED',channel:action==='REQUEST_AUDIO'?'AUDIO':'VIDEO'}});
+    }
+    if(action==='ACCEPT_CALL'){
+      if(role!=='DOC'||current.call!=='REQUESTED')return reject();
+      return changed({consultation:{...current,call:'ACCEPTED_SIMULATION'}});
+    }
+    if(!['REQUESTED','ACCEPTED_SIMULATION'].includes(current.call))return reject();
+    return changed({consultation:{...current,call:'ENDED'}});
+  }
+  const result=advanceTrial(state,role,action,version,now);
+  if(result.ok){
+    if(result.state.status!=='EN_ROUTE')result.state.tracking=null;
+    if(result.state.status!=='IN_PROGRESS'&&result.state.consultation?.call!=='NONE'){
+      result.state.consultation={...result.state.consultation,call:'ENDED'};
+    }
+  }
+  return result;
+}
+
+function projectTrialState(state,role,now=Date.now()){
+  const view={version:state.version,status:state.status,scenario:state.scenario};
+  if(['PAT','NRS','ADM'].includes(role))view.assigned=state.assigned;
+  if(['NRS','ADM'].includes(role)){view.offer=state.offer;view.offerExpiresAt=state.offerExpiresAt;}
+  if(['PAT','NRS'].includes(role)&&state.status==='EN_ROUTE'&&state.tracking){
+    view.tracking={...state.tracking,stale:now-state.tracking.updatedAt>120000};
+  }
+  if(role==='NRS'||role==='DOC')Object.assign(view,{order:state.order,planned:state.planned,performed:state.performed,prescription:state.prescription,consultation:state.consultation});
+  if(['PAT','ADM','PHA','CUR'].includes(role))Object.assign(view,{prescription:state.prescription,delivery:state.delivery});
+  if(['PAT','ADM'].includes(role))view.billing=state.billing;
+  return view;
+}
+
+/** Advance the synthetic booking and dispatch in the same locked store transaction. */
+function applyAutomaticTrialAction(state,role,action,version,now=Date.now()){
+  const result=applyTrialAction(state,role,action,version,now);
+  if(!result.ok)return result;
+  if((action==='CONSENT'||action==='RESCHEDULE')&&result.state.status==='ELIGIBILITY_CHECK'){
+    const dispatched=applyTrialAction(result.state,'ADM','DISPATCH',result.state.version,now);
+    if(!dispatched.ok)return {ok:false,reason:'DISPATCH_FAILED',state};
+    const records=dispatched.state.records.map(record=>record.version===dispatched.state.version?{...record,role:'SYSTEM'}:record);
+    return {...dispatched,state:{...dispatched.state,records}};
+  }
+  return result;
+}
+
+</script><script>
+
 const roles={PAT:'Pasien',NRS:'Perawat',DOC:'Dokter',PHA:'Apotek',CUR:'Kurir',ADM:'Administrator'};
-const labels={DRAFT:'Belum ada pemesanan',REQUESTED:'Permintaan diterima',TRIAGE_OK:'Skrining contoh selesai',LOCATION_OK:'Lokasi contoh terverifikasi',ELIGIBILITY_CHECK:'Menunggu pencarian perawat',CONFIRMED:'Mencari perawat',ASSIGNED:'Perawat ditugaskan',EN_ROUTE:'Perawat menuju lokasi',ARRIVED:'Perawat telah tiba',IN_PROGRESS:'Kunjungan berlangsung',DOCUMENTATION_PENDING:'Menunggu dokumentasi',COMPLETED:'Kunjungan selesai (simulasi)',ESCALATED_EMERGENCY:'Pemesanan rutin dihentikan',REJECTED_OUT_OF_AREA:'Lokasi di luar wilayah layanan',RESCHEDULE_REQUESTED:'Penjadwalan ulang diperlukan',CANCELLED_BY_PATIENT:'Pemesanan dibatalkan'};
-const orderLabels={NONE:'Belum ada instruksi',REQUESTED:'Menunggu penilaian dokter',SIGNED:'Instruksi contoh diterbitkan',ACKNOWLEDGED:'Instruksi contoh diterima',REVOKED:'Instruksi dicabut',EXECUTED:'Tindakan contoh tercatat'};
-const medLabels={NONE:'Belum ada resep',RECEIVED:'Menunggu validasi apotek',ACCEPTED:'Resep contoh diterima',REJECTED:'Resep contoh ditolak',READY:'Pesanan siap',HANDED_OFF:'Diserahkan ke kurir'};
-const deliveryLabels={NONE:'Belum ada pengantaran',PENDING:'Menunggu penugasan',ASSIGNED:'Kurir ditugaskan',PICKED_UP:'Dalam pengantaran',DELIVERED:'Diterima (simulasi)'};
-const scenarios={INDEPENDENT:'Asuhan mandiri',MANDATE:'Asuhan dengan instruksi dan mandat',EMERGENCY:'Skrining tanda bahaya',OUTSIDE:'Alamat di luar Sidrap',NO_CAPACITY:'Tidak ada kapasitas'};
-let state=initialTrial(),role='PAT',message='';
-const root=document.getElementById('workspace');
-const action=(event,label,secondary=false)=>'<button type="button" data-action="'+event+'" class="'+(secondary?'secondary':'primary')+'">'+label+'</button>';
-const panel=(title,body)=>'<section class="panel"><h2>'+title+'</h2>'+body+'</section>';
-const status=()=>'<div class="status"><span class="status-dot"></span>'+labels[state.status]+'</div>';
-const description=(t)=>'<p class="muted">'+t+'</p>';
-const map=()=>'<div class="map"><svg viewBox="0 0 360 205" role="img" aria-label="Ilustrasi jalur perjalanan, bukan peta GPS"><rect width="360" height="205" fill="#e7ede3"/><g fill="none" stroke="#fff" stroke-width="11"><path d="M20 0v205M110 0v205M245 0v205M0 50h360M0 145h360M360 5L180 205"/></g><path d="M20 145h90V50h135" fill="none" stroke="#176b5b" stroke-width="5" stroke-linecap="round"/><circle cx="20" cy="145" r="11" fill="#176b5b" stroke="white" stroke-width="3"/><circle cx="245" cy="50" r="11" fill="#123f3a" stroke="white" stroke-width="3"/></svg><div class="map-caption">Rute skematis · GPS dan ETA tidak terhubung</div></div>';
+const descriptions={PAT:'Pesan perawat dan ikuti kunjungan.',NRS:'Terima tugas, perjalanan dan asuhan.',DOC:'Antrean konsultasi dan instruksi.',PHA:'Validasi resep dan siapkan obat.',CUR:'Ambil dan antar pesanan.',ADM:'Pantau penugasan dan pengecualian.'};
+const icons={home:'M3 10l9-7 9 7v11H3z M9 21v-7h6v7',calendar:'M4 6h16v15H4z M4 10h16 M8 3v5 M16 3v5',history:'M3 12a9 9 0 1 0 3-6.7L3 8 M3 3v5h5 M12 7v5l4 2',user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M4 21v-2a8 8 0 0 1 16 0v2',heart:'M20.8 8.6c0 4-8.8 10.4-8.8 10.4S3.2 12.6 3.2 8.6a4.5 4.5 0 0 1 8.8-1.4 4.5 4.5 0 0 1 8.8 1.4',brief:'M4 8h16v12H4z M9 8V5h6v3 M4 13h16',steth:'M5 3v6a5 5 0 0 0 10 0V3 M5 3H3 M15 3h2 M10 14v2a5 5 0 0 0 10 0v-2 M20 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4',pill:'M5 19a5 5 0 0 1 0-7l7-7a5 5 0 0 1 7 7l-7 7a5 5 0 0 1-7 0z M8 9l7 7',truck:'M3 5h12v12H3z M15 9h4l3 4v4h-7 M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4 M18 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4',grid:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',pin:'M12 21s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4',check:'M5 12l5 5L20 7',message:'M3 4h18v13H9l-6 4z',file:'M5 3h10l4 4v14H5z M14 3v5h5 M8 12h8 M8 16h8',clock:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18 M12 7v5l3 2'};
+const roleIcon={PAT:'heart',NRS:'brief',DOC:'steth',PHA:'pill',CUR:'truck',ADM:'grid'};
+const svg=(key)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+icons[key]+'"/></svg>';
+const glyph=(key)=>'<span class="glyph">'+svg(key)+'</span>';
+const labels={DRAFT:'Belum ada pemesanan',REQUESTED:'Permintaan diterima',TRIAGE_OK:'Skrining selesai',LOCATION_OK:'Alamat contoh terverifikasi',ELIGIBILITY_CHECK:'Memeriksa ketersediaan',CONFIRMED:'Mencari perawat',ASSIGNED:'Perawat ditugaskan',EN_ROUTE:'Perawat menuju lokasi',ARRIVED:'Perawat telah tiba',IN_PROGRESS:'Pelayanan berlangsung',DOCUMENTATION_PENDING:'Menunggu catatan pelayanan',COMPLETED:'Kunjungan selesai',ESCALATED_EMERGENCY:'Pemesanan rutin dihentikan',REJECTED_OUT_OF_AREA:'Di luar wilayah layanan',RESCHEDULE_REQUESTED:'Penjadwalan ulang diperlukan',CANCELLED_BY_PATIENT:'Pemesanan dibatalkan'};
+const scenarios={INDEPENDENT:'Asuhan mandiri',MANDATE:'Asuhan dengan mandat dokter',EMERGENCY:'Skenario tanda bahaya',OUTSIDE:'Alamat di luar Sidrap',NO_CAPACITY:'Tidak ada kapasitas'};
+const order={NONE:'Belum ada instruksi',REQUESTED:'Menunggu dokter',SIGNED:'Instruksi diterbitkan',ACKNOWLEDGED:'Instruksi diterima',REVOKED:'Instruksi dicabut',EXECUTED:'Tindakan tercatat'};
+const medicine={NONE:'Belum ada resep',RECEIVED:'Menunggu validasi',ACCEPTED:'Resep diterima',REJECTED:'Resep ditolak',READY:'Pesanan siap',HANDED_OFF:'Diserahkan ke kurir'};
+const delivery={NONE:'Belum ada pengantaran',PENDING:'Menunggu penugasan',ASSIGNED:'Kurir ditugaskan',PICKED_UP:'Dalam pengantaran',DELIVERED:'Diterima'};
+const billing={NOT_ISSUED:'Belum ditagihkan',ISSUED:'Menunggu pembayaran contoh',SETTLED:'Pembayaran contoh tercatat'};
+const menus={PAT:[['home','Beranda','home'],['schedule','Jadwal','calendar'],['history','Riwayat','history'],['account','Akun','user']],NRS:[['home','Tugas','brief'],['schedule','Jadwal','calendar'],['history','Riwayat','history'],['account','Akun','user']],DOC:[['home','Antrean','steth'],['history','Riwayat','history'],['account','Akun','user']],PHA:[['home','Resep','pill'],['history','Riwayat','history'],['account','Akun','user']],CUR:[['home','Pengantaran','truck'],['history','Riwayat','history'],['account','Akun','user']],ADM:[['home','Operasional','grid'],['history','Aktivitas','history'],['account','Akun','user']]};
+let state=createTrialState(),role=null,tab='home',message='';
+const el=document.getElementById('app');
+const btn=(action,label,secondary=false)=>'<button type="button" class="'+(secondary?'secondary':'primary')+'" data-action="'+action+'">'+label+'</button>';
+const panel=(title,body,cls='')=>'<section class="panel '+cls+'"><h2>'+title+'</h2>'+body+'</section>';
+const muted=(text)=>'<p class="muted">'+text+'</p>';
+const line=(key,val)=>'<div class="row-line"><span>'+key+'</span><strong>'+val+'</strong></div>';
+const heading=(title,subtitle,icon)=>'<div class="heading"><div class="heading-copy"><h1>'+title+'</h1>'+muted(subtitle)+'</div>'+glyph(icon)+'</div>';
+const empty=(icon,title,detail)=>'<div class="empty">'+glyph(icon)+'<strong>'+title+'</strong>'+muted(detail)+'</div>';
+const status=()=>'<p class="status '+(['CONFIRMED','RESCHEDULE_REQUESTED','DOCUMENTATION_PENDING'].includes(state.status)?'pending':'')+'">'+labels[state.status]+'</p>';
+const active=['ASSIGNED','EN_ROUTE','ARRIVED','IN_PROGRESS','DOCUMENTATION_PENDING','COMPLETED'];
+const steps=['Permintaan diterima','Perawat ditemukan','Dalam perjalanan','Pelayanan','Selesai'];
+function timeline(){
+ const position=state.status==='COMPLETED'?4:['ARRIVED','IN_PROGRESS','DOCUMENTATION_PENDING'].includes(state.status)?3:state.status==='EN_ROUTE'?2:state.status==='ASSIGNED'?1:0;
+ return '<ol class="timeline">'+steps.map((s,i)=>'<li class="'+(i<position?'done':i===position?'current':'')+'">'+s+'</li>').join('')+'</ol>';
+}
+function map(){
+ const points=[[30,185],[133,185],[133,68]],p=points[state.tracking?.index??0];
+ return '<div class="map"><svg viewBox="0 0 360 240" role="img" aria-label="Peta skematis perjalanan contoh, bukan peta aktual"><rect width="360" height="240" fill="#e7ede3"/><g fill="#d6e5d3"><rect x="45" y="18" width="72" height="35" rx="8"/><rect x="150" y="92" width="78" height="68" rx="8"/><rect x="270" y="180" width="74" height="48" rx="8"/></g><g fill="none" stroke="white" stroke-width="11"><path d="M30 0v240M133 0v240M250 0v240M0 68h360M0 185h360M0 115h360"/></g><path d="M30 185h103V68h117" fill="none" stroke="#176b5b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+p[0]+'" cy="'+p[1]+'" r="10" fill="#176b5b" stroke="white" stroke-width="4"/><circle cx="250" cy="68" r="10" fill="#123f3a" stroke="white" stroke-width="4"/><text x="18" y="24" font-size="12" fill="#53635e">Ilustrasi rute</text></svg><p class="muted">'+(state.tracking?'Titik contoh '+(state.tracking.index+1)+' dari 3 · '+state.tracking.meters+' m jarak lurus':'Belum ada pembaruan lokasi')+' · ETA tidak tersedia</p></div>';
+}
 function patient(){
-  if(state.status==='DRAFT')return '<div class="heading"><p class="muted">Alamat kunjungan contoh</p><h1>Perawatan di rumah</h1><p>Rappang, Panca Rijang · Sidrap</p></div><div class="hero"><h2>Pesan perawat</h2><p>Uji alur permintaan kunjungan rumah.</p>'+action('REQUEST','Mulai pemesanan')+'</div>'+panel('Skenario kunjungan','<div class="scenario-list">'+Object.entries(scenarios).map(([key,label])=>'<button class="choice" aria-pressed="'+(state.scenario===key)+'" data-action="'+key+'">'+label+'<span>'+(state.scenario===key?'Dipilih':'Pilih')+'</span></button>').join('')+'</div>');
-  let body=status()+'<p>'+scenarios[state.scenario]+'</p>';
-  if(state.status==='REQUESTED')body+=action('SCREEN','Jalankan skrining contoh');
-  if(state.status==='TRIAGE_OK')body+=action('VERIFY_DESTINATION','Periksa alamat contoh');
-  if(state.status==='LOCATION_OK')body+=description('Tidak ada transaksi uang. Persetujuan ini hanya untuk skenario uji.')+action('CONSENT','Setujui dan lanjutkan');
-  if(state.status==='ELIGIBILITY_CHECK')body+=description('Lanjutkan pada dashboard Administrator untuk pencarian tenaga.');
-  if(state.status==='CONFIRMED')body+=description('Petugas belum menerima tugas. Identitas tidak ditampilkan.');
-  if(['ASSIGNED','EN_ROUTE','ARRIVED','IN_PROGRESS','DOCUMENTATION_PENDING','COMPLETED'].includes(state.status))body+='<p>Perawat '+(state.assigned==='NURSE_B'?'B':'C')+' · Petugas contoh</p>';
-  if(state.status==='EN_ROUTE')body+=map();
-  if(state.status==='ESCALATED_EMERGENCY')body+='<p class="warning">Simulasi dihentikan. Pada keadaan darurat nyata, cari pertolongan medis darurat setempat.</p>';
-  if(state.status==='RESCHEDULE_REQUESTED')body+=description('Tidak ada perawat yang memenuhi syarat pada skenario ini.');
-  if(state.status==='COMPLETED')body+=description('Ringkasan asuhan contoh tersedia. Tidak ada rekam medis nyata.');
-  if(['REQUESTED','TRIAGE_OK','LOCATION_OK','ELIGIBILITY_CHECK','CONFIRMED','ASSIGNED','EN_ROUTE','RESCHEDULE_REQUESTED'].includes(state.status))body+=action('CANCEL','Batalkan permintaan',true);
-  return '<h1>Kunjungan Anda</h1>'+panel('Status kunjungan',body)+panel('Obat dan pengantaran',description(medLabels[state.prescription]+' · '+deliveryLabels[state.delivery]));
+ if(state.status==='DRAFT')return heading('Perawatan di rumah','Alamat contoh · Rappang, Panca Rijang','pin')+'<section class="hero-book"><div><h2>Pesan perawat</h2><p>Atur kunjungan rumah sesuai kebutuhan perawatan Anda.</p>'+btn('REQUEST','Mulai pemesanan')+'</div><svg viewBox="0 0 112 112" fill="none" stroke="#dcebe2" stroke-width="2.5" aria-hidden="true"><path d="M16 49 56 17l40 32v45H16z"/><path d="M44 94V70h24v24M56 38v24M44 50h24"/><path d="M7 49 56 10l49 39"/></svg></section>'+panel('Kebutuhan kunjungan','<div class="choices">'+Object.entries(scenarios).map(([key,label])=>'<button class="choice" aria-pressed="'+(state.scenario===key)+'" data-action="'+key+'">'+label+'<span>'+(state.scenario===key?'Dipilih':'Pilih')+'</span></button>').join('')+'</div>')+panel('Katalog layanan','<div class="services">'+[['Kunjungan dokter','steth'],['Keperawatan khusus','brief'],['Perawatan luka','heart'],['Fisioterapi','heart'],['Terapi tambahan','file'],['Pascaoperasi','brief'],['Perawatan lansia','user'],['Ibu dan bayi','heart'],['Pemeriksaan lab','file']].map(([label,icon])=>'<div class="service">'+glyph(icon)+'<div><strong>'+label+'</strong><small>Referensi katalog</small></div></div>').join('')+'</div>'+muted('Kategori lain belum dapat dipesan pada skenario uji ini.'));
+ let body=status()+muted(scenarios[state.scenario]);
+ if(state.status==='REQUESTED')body+=muted('Jalankan pemeriksaan tanda bahaya dengan skenario yang dipilih.')+btn('SCREEN','Jalankan skrining contoh');
+ if(state.status==='TRIAGE_OK')body+=line('Tujuan','Rappang, Sidrap')+btn('VERIFY_DESTINATION','Periksa alamat contoh');
+ if(state.status==='LOCATION_OK')body+=line('Pembayaran','Setelah pelayanan')+muted('Tidak ada transaksi uang dan tidak ada persetujuan medis nyata.')+btn('CONSENT','Setujui dan cari perawat');
+ if(state.status==='CONFIRMED')body+=muted('Sistem telah menawarkan kunjungan kepada kandidat yang memenuhi syarat. Identitas terlihat setelah tugas diterima.');
+ if(active.includes(state.status))body+=line('Perawat','Petugas contoh '+state.assigned.slice(-1));
+ if(state.status==='ESCALATED_EMERGENCY')body+='<p class="warning">Simulasi dihentikan. Pada keadaan darurat nyata, cari pertolongan medis darurat setempat.</p>';
+ if(state.status==='RESCHEDULE_REQUESTED')body+=muted('Belum ada kapasitas. Administrator dapat menindaklanjuti penjadwalan.');
+ if(['REQUESTED','TRIAGE_OK','LOCATION_OK','CONFIRMED','ASSIGNED','EN_ROUTE','RESCHEDULE_REQUESTED'].includes(state.status))body+=btn('CANCEL','Batalkan permintaan',true);
+ return heading('Kunjungan Anda','Kunjungan rumah · Sidrap','home')+(state.status==='EN_ROUTE'?map():'')+panel('Status kunjungan',body)+(!['ESCALATED_EMERGENCY','REJECTED_OUT_OF_AREA','CANCELLED_BY_PATIENT','RESCHEDULE_REQUESTED'].includes(state.status)?panel('Perjalanan pelayanan',timeline()):'')+panel('Tagihan dan obat',line('Tagihan',billing[state.billing])+line('Resep',medicine[state.prescription])+line('Pengantaran',delivery[state.delivery]));
 }
 function nurse(){
-  let body=status();
-  switch(state.status){
-    case 'CONFIRMED': body+='<h3>Penawaran kunjungan</h3><p>Perawat '+(state.offer==='NURSE_B'?'B':'C')+' · Zona Rappang</p>'+description('Alamat lengkap belum dibagikan.')+'<div class="actions">'+action('DECLINE','Tolak',true)+action('ACCEPT','Terima tugas')+'</div>';break;
-    case 'ASSIGNED':body+='<p>Alamat contoh: Rappang, Panca Rijang</p>'+action('DEPART','Mulai perjalanan');break;
-    case 'EN_ROUTE':body+=map()+action('ARRIVE','Tiba di lokasi');break;
-    case 'ARRIVED':body+=action('ASSESS','Catat pengkajian contoh');break;
-    case 'IN_PROGRESS':
-      body+='<div class="steps"><div>Pengkajian <strong>Selesai</strong></div><div>Diagnosis keperawatan dan rencana <strong>'+(state.planned?'Tercatat':'Belum tercatat')+'</strong></div><div>Tindakan <strong>'+(state.performed?'Tercatat':'Belum dilakukan')+'</strong></div></div>';
-      if(!state.planned)body+=action('PLAN','Catat diagnosis dan rencana contoh');
-      else if(state.performed)body+=action('EVALUATE','Catat evaluasi');
-      else if(state.scenario==='INDEPENDENT')body+=action('PERFORM','Catat asuhan mandiri contoh');
-      else {body+=description(orderLabels[state.order]);if(['NONE','REVOKED'].includes(state.order))body+=action('CONSULT','Minta konsultasi dokter');if(state.order==='SIGNED')body+=action('ACKNOWLEDGE','Terima instruksi contoh');if(state.order==='ACKNOWLEDGED')body+=action('PERFORM','Catat pelaksanaan mandat contoh');}break;
-    case 'DOCUMENTATION_PENDING':body+=description('Evaluasi tercatat. Rekonsiliasi di sini hanya simulasi, bukan pengiriman RME.')+action('RECONCILE','Selesaikan rekonsiliasi contoh');break;
-    case 'COMPLETED':body+=description('Kunjungan contoh selesai.');break;
-    default:body+=description('Tidak ada tugas yang dapat diterima.');
-  }
-  return '<h1>Tugas perawat</h1>'+panel('Kunjungan rumah',body);
+ let body=status();
+ if(state.status==='CONFIRMED')body+=line('Zona','Rappang')+line('Penawaran','Perawat '+state.offer.slice(-1))+muted('Alamat lengkap baru diberikan setelah menerima tugas.')+'<div class="actions">'+btn('ACCEPT','Terima tugas')+btn('DECLINE','Tolak',true)+'</div>';
+ else if(state.status==='ASSIGNED')body+=line('Alamat contoh','Rappang, Panca Rijang')+btn('DEPART','Mulai perjalanan');
+ else if(state.status==='EN_ROUTE')body+=map()+((state.tracking?.index??-1)<2?btn('LOCATION_STEP','Kirim titik perjalanan contoh',true):'')+btn('ARRIVE','Tiba di lokasi');
+ else if(state.status==='ARRIVED')body+=btn('ASSESS','Catat pengkajian contoh');
+ else if(state.status==='IN_PROGRESS'){
+  body+=line('Pengkajian',state.assessed?'Tercatat':'Belum')+line('Diagnosis dan rencana',state.planned?'Tercatat':'Belum')+line('Tindakan',state.performed?'Tercatat':'Belum');
+  if(!state.planned)body+=btn('PLAN','Catat diagnosis dan rencana asuhan');
+  else if(state.performed)body+=btn('EVALUATE','Catat evaluasi');
+  else if(state.scenario==='INDEPENDENT')body+=btn('PERFORM','Catat asuhan mandiri');
+  else if(['NONE','REVOKED'].includes(state.order))body+=muted('Tindakan terkunci sampai instruksi diterima.')+btn('CONSULT','Minta konsultasi dokter');
+  else if(state.order==='SIGNED')body+=btn('ACKNOWLEDGE','Terima instruksi');
+  else if(state.order==='ACKNOWLEDGED')body+=btn('PERFORM','Catat tindakan contoh');
+  else body+=muted('Menunggu instruksi dokter.');
+ }else if(state.status==='DOCUMENTATION_PENDING')body+=muted('Catatan uji saja. Tidak ada rekonsiliasi RME.')+btn('RECONCILE','Selesaikan dokumentasi contoh');
+ else body+=empty('brief','Belum ada tugas aktif','Penawaran akan muncul apabila ada permintaan eligible.');
+ return heading('Tugas perawat','Kunjungan rumah · Area Sidrap','brief')+panel('Kesiapan tugas',line('Ketersediaan contoh',state.available?'Tersedia':'Tidak tersedia')+line('Penugasan',state.assigned?'Petugas '+state.assigned.slice(-1):'Belum ditugaskan'))+panel('Kunjungan',body)+(['IN_PROGRESS','DOCUMENTATION_PENDING'].includes(state.status)?panel('Instruksi dan konsultasi',consultation('NRS')):'');
+}
+function consultation(r){
+ const c=state.consultation;let body=line('Instruksi',order[state.order]);
+ if(state.status==='IN_PROGRESS'&&state.order!=='NONE'){
+  body+='<div class="record">'+c.messages.map(m=>muted(m.role==='NRS'?'Perawat · Permintaan penilaian contoh':'Dokter · Permintaan contoh diterima')).join('')+'</div>';
+  if(r==='NRS'&&c.messages.length<20)body+=btn('MESSAGE_REQUEST','Kirim pesan contoh',true);
+  if(r==='DOC'&&c.messages.some(m=>m.role==='NRS')&&c.messages.length<20)body+=btn('MESSAGE_REPLY','Balas pesan contoh',true);
+  if(r==='NRS'&&['NONE','ENDED'].includes(c.call))body+='<div class="actions">'+btn('REQUEST_AUDIO','Minta audio',true)+btn('REQUEST_VIDEO','Minta video',true)+'</div>';
+  if(r==='DOC'&&c.call==='REQUESTED')body+=btn('ACCEPT_CALL','Terima permintaan panggilan');
+  if(['REQUESTED','ACCEPTED_SIMULATION'].includes(c.call))body+=btn('END_CALL','Akhiri simulasi panggilan',true);
+  body+=muted(c.call==='REQUESTED'?'Permintaan '+(c.channel==='AUDIO'?'audio':'video')+' menunggu respons.':c.call==='ACCEPTED_SIMULATION'?'Permintaan diterima, tidak ada sambungan media.':c.call==='ENDED'?'Simulasi panggilan berakhir.':'Belum ada panggilan.');
+ }
+ return body+muted('Pesan berupa contoh tetap. Audio/video belum tersambung.');
 }
 function doctor(){
-  let body=description(orderLabels[state.order]);
-  if(state.status==='IN_PROGRESS'&&state.scenario==='MANDATE'){
-    if(state.order==='REQUESTED')body+=description('Pengkajian dan rencana perawat contoh telah diterima.')+action('SIGN','Terbitkan instruksi dan mandat contoh');
-    if(['SIGNED','ACKNOWLEDGED'].includes(state.order)&&!state.performed)body+=action('REVOKE','Cabut instruksi contoh',true);
-    if(['ACKNOWLEDGED','EXECUTED'].includes(state.order)&&state.prescription==='NONE')body+=action('PRESCRIBE','Terbitkan resep contoh');
-  }else body+=description('Tidak ada konsultasi aktif.');
-  return '<h1>Ruang klinis</h1>'+panel('Antrean konsultasi',body)+panel('Kewenangan dokter',description('Diagnosis medis, instruksi, resep dan rujukan terpisah dari asuhan keperawatan. Tidak ada diagnosis atau resep nyata di lingkungan ini.'));
+ const has=state.status==='IN_PROGRESS'&&state.order!=='NONE';
+ let detail=has?line('Kebutuhan contoh',scenarios[state.scenario])+line('Rencana asuhan',state.planned?'Tercatat':'Belum')+line('Instruksi',order[state.order]):empty('steth','Tidak ada konsultasi aktif','Permintaan perawat yang memerlukan penilaian dokter muncul di sini.');
+ if(has&&state.order==='REQUESTED')detail+=btn('SIGN','Terbitkan instruksi dan mandat contoh');
+ if(has&&['SIGNED','ACKNOWLEDGED'].includes(state.order)&&!state.performed)detail+=btn('REVOKE','Cabut instruksi contoh',true);
+ if(has&&['ACKNOWLEDGED','EXECUTED'].includes(state.order)&&state.prescription==='NONE')detail+=btn('PRESCRIBE','Terbitkan resep contoh');
+ return heading('Ruang klinis','Antrean dan penilaian kasus contoh','steth')+'<div class="split">'+panel('Antrean konsultasi',has?'<div class="queue-item active"><strong>Kunjungan rumah</strong>'+muted(order[state.order])+'</div>':empty('message','Antrean kosong','Belum ada permintaan baru.'))+panel('Detail konsultasi',detail)+panel('Komunikasi',consultation('DOC'),'full')+'</div>';
 }
 function pharmacy(){
- let body=description(medLabels[state.prescription]);
- if(state.prescription==='RECEIVED')body+='<div class="actions">'+action('PHARMACY_REJECT','Tolak',true)+action('PHARMACY_ACCEPT','Validasi contoh')+'</div>';
- if(state.prescription==='ACCEPTED')body+=action('PHARMACY_READY','Tandai pesanan siap');
- return '<h1>Antrean apotek</h1>'+panel('Pemenuhan resep contoh',body);
+ let body=line('Status resep',medicine[state.prescription]);if(state.prescription==='NONE')body+=empty('pill','Belum ada resep','Resep contoh dari dokter akan muncul di antrean ini.');
+ if(state.prescription==='RECEIVED')body+='<div class="actions">'+btn('PHARMACY_ACCEPT','Validasi resep contoh')+btn('PHARMACY_REJECT','Tolak resep',true)+'</div>';
+ if(state.prescription==='ACCEPTED')body+=btn('PHARMACY_READY','Tandai pesanan siap');
+ return heading('Pemenuhan resep','Antrean apotek mitra contoh','pill')+'<div class="split">'+panel('Antrean resep',body)+panel('Serah terima',line('Pengantaran',delivery[state.delivery])+muted('Tidak ada obat atau resep sungguhan.'))+'</div>';
 }
 function courier(){
- let body=description(deliveryLabels[state.delivery]);
- if(state.delivery==='ASSIGNED')body+=action('PICKUP','Ambil pesanan contoh');
- if(state.delivery==='PICKED_UP')body+=action('DELIVER','Konfirmasi diterima');
- return '<h1>Tugas pengantaran</h1>'+panel('Pengantaran obat',body);
+ let body=line('Status',delivery[state.delivery]);if(state.delivery==='ASSIGNED')body+=line('Pengambilan','Apotek contoh')+line('Tujuan','Rappang')+btn('PICKUP','Ambil pesanan');
+ else if(state.delivery==='PICKED_UP')body+=line('Tujuan contoh','Rappang')+btn('DELIVER','Konfirmasi diterima');
+ else if(state.delivery==='NONE'||state.delivery==='PENDING')body+=empty('truck','Belum ada tugas pengantaran','Tugas muncul setelah pesanan siap dan kurir ditugaskan.');
+ return heading('Pengantaran','Tugas kurir · Sidrap','truck')+panel('Tugas aktif',body)+panel('Serah terima',line('Pesanan',medicine[state.prescription])+muted('Alamat dan rute di sini hanya contoh.'));
 }
 function admin(){
  let body=status();
- if(state.status==='ELIGIBILITY_CHECK')body+='<div class="steps"><div>Perawat A <strong>Tidak memenuhi kompetensi</strong></div><div>Perawat B <strong>Kandidat contoh</strong></div><div>Perawat C <strong>Kandidat contoh</strong></div></div>'+action('DISPATCH','Jalankan pencarian contoh');
- if(state.status==='CONFIRMED')body+=description('Kapasitas simulasi dicadangkan. Penawaran menunggu respons.')+action('EXPIRE','Simulasikan penawaran kedaluwarsa',true);
- if(state.status==='RESCHEDULE_REQUESTED')body+=action('RESCHEDULE','Simulasikan jadwal baru');
- let delivery=description(deliveryLabels[state.delivery]);if(state.delivery==='PENDING')delivery+=action('COURIER_ASSIGN','Tugaskan kurir contoh');
- const audit=state.records.length?'<div class="audit" role="list">'+state.records.slice(-8).reverse().map(e=>'<div role="listitem"><strong>'+roles[e.role]+'</strong><span>'+labels[e.status]+'</span></div>').join('')+'</div>':description('Belum ada aktivitas.');
- return '<h1>Operasional</h1>'+panel('Pemesanan dan penugasan',body)+panel('Pengantaran',delivery)+panel('Aktivitas terakhir',audit);
+ if(state.status==='CONFIRMED')body+=line('Penawaran aktif','Perawat '+state.offer.slice(-1))+btn('EXPIRE','Simulasikan penawaran kedaluwarsa',true);
+ if(state.status==='RESCHEDULE_REQUESTED')body+=btn('RESCHEDULE','Simulasikan jadwal baru');
+ let invoice=line('Tagihan',billing[state.billing]);
+ if(state.status==='COMPLETED'&&state.billing==='NOT_ISSUED')invoice+=btn('ISSUE_INVOICE','Terbitkan tagihan contoh');
+ if(state.billing==='ISSUED')invoice+=btn('SETTLE_INVOICE','Simulasikan pembayaran terverifikasi');
+ let handoff=line('Pengantaran',delivery[state.delivery]);if(state.delivery==='PENDING')handoff+=btn('COURIER_ASSIGN','Tugaskan kurir contoh');
+ const table='<div class="table-wrap"><table><thead><tr><th>Petugas contoh</th><th>Kelayakan</th><th>Status</th></tr></thead><tbody>'+['A','B','C'].map(n=>'<tr><td>Perawat '+n+'</td><td>'+(n==='A'?'Tidak sesuai kompetensi':'Eligible pada skenario')+'</td><td>'+(state.assigned==='NURSE_'+n?'Ditugaskan':state.offer==='NURSE_'+n?'Ditawari':state.declined.includes('NURSE_'+n)?'Penawaran ditutup':'Tidak ditugaskan')+'</td></tr>').join('')+'</tbody></table></div>';
+ return heading('Operasional','Penugasan, kapasitas dan tindak lanjut','grid')+panel('Pemesanan',body)+panel('Kandidat penugasan',table)+'<div class="split">'+panel('Pembayaran',invoice)+panel('Pengantaran',handoff)+'</div>';
 }
 const views={PAT:patient,NRS:nurse,DOC:doctor,PHA:pharmacy,CUR:courier,ADM:admin};
-function render(){
- document.querySelectorAll('[data-role]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.role===role)));
- root.innerHTML='<div class="content">'+views[role]()+'</div>';
- document.getElementById('message').textContent=message;
+function auxiliary(){
+ if(tab==='account')return heading('Akun uji','Identitas sintetis','user')+panel('Profil',line('Peran',roles[role])+muted(['PAT','CUR'].includes(role)?'Registrasi mandiri tersedia pada rancangan produk; verifikasi nyata belum terhubung.':'Akun dibuat melalui Administrator pada rancangan produk; bukan registrasi mandiri.')+'<button class="secondary" data-exit>Keluar ke pilihan akun uji</button>');
+ if(tab==='schedule')return heading('Jadwal','Kunjungan contoh','calendar')+panel('Kunjungan',state.status==='DRAFT'?empty('calendar','Belum ada jadwal','Pemesanan akan muncul setelah dibuat.'):status()+line('Skenario',scenarios[state.scenario])+muted('Tidak ada jadwal nyata.'));
+ const entries=state.records.filter(e=>role==='ADM'||e.role===role).slice(-12).reverse();
+ return heading(role==='ADM'?'Aktivitas':'Riwayat','Aktivitas skenario saat ini','history')+panel('Catatan aktivitas',entries.length?'<div class="record">'+entries.map(e=>line(roles[e.role]??'Sistem',labels[e.status])).join('')+'</div>':empty('history','Belum ada aktivitas','Riwayat muncul setelah tindakan tercatat.'));
 }
-document.getElementById('role-selector').addEventListener('click',event=>{const button=event.target.closest('[data-role]');if(!button||!roles[button.dataset.role])return;role=button.dataset.role;message='';render();});
-root.addEventListener('click',event=>{const button=event.target.closest('[data-action]');if(!button)return;const result=advanceTrial(state,role,button.dataset.action,state.version);if(result.ok){state=result.state;message='Perubahan simulasi tercatat.';}else message='Langkah tidak tersedia pada keadaan ini.';render();});
-document.getElementById('reset').addEventListener('click',()=>{state=initialTrial();role='PAT';message='Skenario dikembalikan ke awal.';render();});
+function navigation(cls){return '<nav class="'+cls+'" aria-label="Navigasi '+roles[role]+'">'+menus[role].map(([key,label,icon])=>'<button data-tab="'+key+'" '+(tab===key?'aria-current="page"':'')+'>'+svg(icon)+'<span>'+label+'</span></button>').join('')+'</nav>';}
+function render(){
+ const header='<header class="header"><div class="brand"><span class="mark">'+svg('heart')+'</span>MADISING</div>'+(role?'<button class="secondary" data-exit>Keluar dari akun uji</button>':'<button class="secondary" data-reset>Ulangi skenario</button>')+'</header>';
+ if(!role){el.innerHTML=header+'<main class="entry"><div class="entry-lead"><h1>Pilih akun uji</h1>'+muted('Gunakan identitas contoh untuk menjalankan satu alur pelayanan dari setiap peran. Tidak ada login produksi.')+'</div><div class="entry-grid">'+Object.entries(roles).map(([key,name])=>'<button class="entry-card" data-enter="'+key+'">'+glyph(roleIcon[key])+'<strong>'+name+'</strong>'+muted(descriptions[key])+'</button>').join('')+'</div>'+muted('Sesi tersimpan hanya selama halaman terbuka. Keluar dari akun uji tidak menghapus kunjungan.')+'</main>';return;}
+ el.innerHTML=header+'<div class="workspace"><aside class="side"><div class="role-identity"><strong>'+roles[role]+'</strong>'+muted('Akun contoh')+'</div>'+navigation('desktop-nav')+'</aside><main>'+ (tab==='home'?views[role]():auxiliary())+'<p id="message" class="notice-status" role="status">'+message+'</p><p class="foot">Data sintetis · Tidak terhubung ke layanan kesehatan, GPS aktual, pembayaran atau RME.</p></main></div>'+navigation('bottom');
+}
+el.addEventListener('click',event=>{
+ const target=event.target.closest('button');if(!target)return;
+ if(target.hasAttribute('data-reset')){state=createTrialState();role=null;tab='home';message='';render();return;}
+ if(target.hasAttribute('data-exit')){role=null;tab='home';message='';render();return;}
+ if(target.dataset.enter&&Object.hasOwn(roles,target.dataset.enter)){role=target.dataset.enter;tab='home';message='';render();return;}
+ if(role&&target.dataset.tab&&menus[role].some(m=>m[0]===target.dataset.tab)){tab=target.dataset.tab;message='';render();return;}
+ if(role&&target.dataset.action){const result=applyAutomaticTrialAction(state,role,target.dataset.action,state.version);if(result.ok){state=result.state;message='Perubahan tercatat.';}else message='Tindakan tidak tersedia pada status ini.';render();}
+});
 render();
-</script>
-</body></html>
+
+</script></body></html>

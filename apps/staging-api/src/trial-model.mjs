@@ -178,3 +178,16 @@ export function projectTrialState(state,role,now=Date.now()){
   if(['PAT','ADM'].includes(role))view.billing=state.billing;
   return view;
 }
+
+/** Advance the synthetic booking and dispatch in the same locked store transaction. */
+export function applyAutomaticTrialAction(state,role,action,version,now=Date.now()){
+  const result=applyTrialAction(state,role,action,version,now);
+  if(!result.ok)return result;
+  if((action==='CONSENT'||action==='RESCHEDULE')&&result.state.status==='ELIGIBILITY_CHECK'){
+    const dispatched=applyTrialAction(result.state,'ADM','DISPATCH',result.state.version,now);
+    if(!dispatched.ok)return {ok:false,reason:'DISPATCH_FAILED',state};
+    const records=dispatched.state.records.map(record=>record.version===dispatched.state.version?{...record,role:'SYSTEM'}:record);
+    return {...dispatched,state:{...dispatched.state,records}};
+  }
+  return result;
+}

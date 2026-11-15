@@ -1,0 +1,7 @@
+# Web experience verification
+
+Scope: public static preview with synthetic fixtures only, distinct role entry, role-specific navigation and layouts, patient booking, nursing task, clinical queue, prescription queue, delivery and operations views. The static preview embeds the same trial reducer as the server at this revision; no network requests or persistent patient information. The integrated Next.js trial retains separate role capabilities and adds automatic dispatch under the existing PostgreSQL session transaction. Consent and reschedule emit a system dispatch event; duplicate and stale actions are rejected. The role-picker is a test harness, not authentication or registration.
+
+Tests: existing regression suite, automatic dispatch tests (eligible offer, no capacity, red flag/outside area, stale/forged action, decline), PostgreSQL test for atomic consent, Next.js HTTP and browser journey, static Chromium journey and 360/390/768/1440 viewport checks. Actual CI evidence must be recorded separately; no device or accessibility certification is claimed.
+
+Review: no new asynchronous work in the static preview; bounded existing state and synchronous event delegation. No external media, real identity, payment or clinical integrations. PostgreSQL row lock and version recheck unchanged. The server and database are still CI-only until a protected staging origin exists; no real user login, media channel, GPS or RME activation. Cloudflare publishes only the static trial. Design follows docs/PANDUAN-UI-UX.md; manual visual review remains necessary.

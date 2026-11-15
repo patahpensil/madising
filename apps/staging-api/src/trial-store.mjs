@@ -1,6 +1,6 @@
 import { randomUUID, randomBytes, createHash } from 'node:crypto';
 import { Pool } from 'pg';
-import { createTrialState, applyTrialAction, projectTrialState } from './trial-model.mjs';
+import { createTrialState, applyAutomaticTrialAction, projectTrialState } from './trial-model.mjs';
 const hash = (token) => createHash('sha256').update(token).digest('hex');
 const validId = (value) => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value);
 const validToken = (value) => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
@@ -46,7 +46,7 @@ export class TrialStore {
       if (result.rowCount !== 1) { await client.query('ROLLBACK'); return {code:404}; }
       const row = result.rows[0];
       if(input.action==='READ'){await client.query('COMMIT');return {code:200,state:projectTrialState(row.state,input.role)};}
-      const transition = applyTrialAction(row.state,input.role,input.action,input.version);
+      const transition = applyAutomaticTrialAction(row.state,input.role,input.action,input.version);
       if (row.version !== input.version || !transition.ok) { await client.query('ROLLBACK'); return {code:409, state:projectTrialState(row.state,input.role)}; }
       const updated = await client.query('UPDATE madising_trial.sessions SET state=$1,version=$2 WHERE id=$3 AND version=$4 AND expires_at > clock_timestamp()',[JSON.stringify(transition.state),transition.state.version,input.id,input.version]);
       if (updated.rowCount !== 1) { await client.query('ROLLBACK'); return {code:409}; }

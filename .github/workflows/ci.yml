@@ -205,3 +205,4 @@ jobs:
           done
           node apps/staging-web/test/http-flow.mjs
           node apps/staging-web/test/browser-flow.mjs
+          node apps/staging-web/test/preview-flow.mjs
