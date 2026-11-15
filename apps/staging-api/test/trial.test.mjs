@@ -30,3 +30,16 @@ test('consent atomically opens an offer without an administrator action',async(t
  const duplicate=await store.act({id:session.id,token:session.tokens.ADM,role:'ADM',action:'DISPATCH',version});
  assert.equal(duplicate.code,409);
 });
+
+test('expired offer is atomically advanced by a read and old response rejected',async(t)=>{
+ const store=new TrialStore(process.env.TRIAL_DATABASE_URL);t.after(()=>store.close());const session=await store.create();let version=0;
+ for(const action of ['REQUEST','SCREEN','VERIFY_DESTINATION','CONSENT']){
+  const result=await store.act({id:session.id,token:session.tokens.PAT,role:'PAT',action,version});assert.equal(result.code,200);version=result.state.version;
+ }
+ await store.pool.query("UPDATE madising_trial.sessions SET state=jsonb_set(state,'{offerExpiresAt}',to_jsonb(1::bigint)) WHERE id=$1",[session.id]);
+ const input={id:session.id,token:session.tokens.NRS,role:'NRS',action:'READ',version};
+ const [a,b]=await Promise.all([store.act(input),store.act(input)]);
+ assert.equal(a.code,200);assert.equal(b.code,200);assert.equal(a.state.offer,'NURSE_C');assert.equal(b.state.offer,'NURSE_C');assert.equal(a.state.version,version+1);assert.equal(b.state.version,version+1);
+ const late=await store.act({...input,action:'ACCEPT'});assert.equal(late.code,409);
+ const accepted=await store.act({...input,action:'ACCEPT',version:version+1});assert.equal(accepted.code,200);assert.equal(accepted.state.assigned,'NURSE_C');
+});

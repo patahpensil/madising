@@ -361,8 +361,8 @@ function auxiliary(){
 function navigation(cls){return '<nav class="'+cls+'" aria-label="Navigasi '+roles[role]+'">'+menus[role].map(([key,label,icon])=>'<button data-tab="'+key+'" '+(tab===key?'aria-current="page"':'')+'>'+svg(icon)+'<span>'+label+'</span></button>').join('')+'</nav>';}
 function render(){
  if(offerTimer!==null){clearTimeout(offerTimer);offerTimer=null;}
- if(state.status==='CONFIRMED'&&state.offerExpiresAt){
-  offerTimer=setTimeout(()=>{const next=expireTrialOffer(state);if(next!==state){state=next;message='Penawaran kedaluwarsa. Status diperbarui.';}render();},Math.max(1,state.offerExpiresAt-Date.now()));
+ if(state.status==='CONFIRMED'&&state.offerExpiresAt&&state.version<1000){
+  offerTimer=setTimeout(()=>{offerTimer=null;const next=expireTrialOffer(state);if(next!==state){state=next;message='Penawaran kedaluwarsa. Status diperbarui.';render();}else if(Date.now()<state.offerExpiresAt)render();},Math.max(1,state.offerExpiresAt-Date.now()));
  }
  const header='<header class="header"><div class="brand"><span class="mark">'+svg('heart')+'</span>MADISING</div>'+(role?'<button class="secondary" data-exit>Keluar dari akun uji</button>':'<button class="secondary" data-reset>Ulangi skenario</button>')+'</header>';
  if(!role){el.innerHTML=header+'<main class="entry"><div class="entry-lead"><h1>Pilih akun uji</h1>'+muted('Gunakan identitas contoh untuk menjalankan satu alur pelayanan dari setiap peran. Tidak ada login produksi.')+'</div><div class="entry-grid">'+Object.entries(roles).map(([key,name])=>'<button class="entry-card" data-enter="'+key+'">'+glyph(roleIcon[key])+'<strong>'+name+'</strong>'+muted(descriptions[key])+'</button>').join('')+'</div>'+muted('Sesi tersimpan hanya selama halaman terbuka. Keluar dari akun uji tidak menghapus kunjungan.')+'</main>';return;}

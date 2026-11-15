@@ -58,7 +58,7 @@ export default function TrialPage(){
   }catch{setMessage('Koneksi terputus. Coba kembali atau mulai sesi baru.');}finally{pending.current=false;setBusy(false);}
  }
  const s=session?.state;
- useEffect(()=>{if(rolePicker||!session||!['PAT','NRS'].includes(role)||s?.status!=='EN_ROUTE')return;const timer=setInterval(()=>send('read',null,role,true),5000);return()=>clearInterval(timer);},[session,role,rolePicker]);
+ useEffect(()=>{if(rolePicker||!session||!['PAT','NRS'].includes(role)||!['EN_ROUTE','CONFIRMED'].includes(s?.status))return;const timer=setInterval(()=>send('read',null,role,true),5000);return()=>clearInterval(timer);},[session,role,rolePicker]);
  const billing={NOT_ISSUED:'Belum ditagihkan',ISSUED:'Menunggu pembayaran contoh',SETTLED:'Pembayaran contoh tercatat'};
  const medication={NONE:'Belum ada resep',RECEIVED:'Menunggu validasi',ACCEPTED:'Resep contoh diterima',REJECTED:'Resep contoh ditolak',READY:'Pesanan siap',HANDED_OFF:'Diserahkan ke kurir'};
  const delivery={NONE:'Belum ada pengantaran',PENDING:'Menunggu penugasan',ASSIGNED:'Kurir ditugaskan',PICKED_UP:'Dalam pengantaran',DELIVERED:'Diterima (simulasi)'};
