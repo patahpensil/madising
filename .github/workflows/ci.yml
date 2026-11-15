@@ -7,6 +7,7 @@ on:
       - main
       - 'chore/**'
       - 'feature/**'
+      - 'fix/**'
 
 permissions:
   contents: read
@@ -169,13 +170,17 @@ jobs:
           psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/004_access.sql
       - name: Install and verify API
         run: |
-          npm --prefix apps/staging-api install --no-audit --no-fund
+          npm --prefix apps/staging-api ci --no-audit --no-fund
           npm --prefix apps/staging-api run build
           npm --prefix apps/staging-api test
       - name: Build Next.js
         run: |
-          npm --prefix apps/staging-web install --no-audit --no-fund
+          npm --prefix apps/staging-web ci --no-audit --no-fund
           npm --prefix apps/staging-web run build
+      - name: Audit production dependencies
+        run: |
+          npm --prefix apps/staging-api audit --omit=dev
+          npm --prefix apps/staging-web audit --omit=dev
       - name: Verify HTTP boundary
         shell: bash
         run: |
@@ -230,6 +235,7 @@ jobs:
             sleep 1
           done
           SCREENSHOT_DIR=/tmp/access-screens node apps/staging-web/test/access-flow.mjs
+          SCREENSHOT_DIR=/tmp/access-screens node apps/staging-web/test/independent-access-http.mjs
       - name: Keep access flow screenshots for review
         if: always()
         uses: actions/upload-artifact@v4
