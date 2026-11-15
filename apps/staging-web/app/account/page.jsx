@@ -1,5 +1,7 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
+import {AuthScreen,CareTeam,PasskeyOffer,Settings,Tour,call} from './access.jsx';
+import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 const roles={PAT:'Pasien',NRS:'Perawat',DOC:'Dokter',PHA:'Apotek',CUR:'Kurir',ADM:'Administrator'};
 const statuses={DRAFT:'Belum ada pemesanan',REQUESTED:'Permintaan diterima',TRIAGE_OK:'Skrining contoh selesai',LOCATION_OK:'Alamat contoh terverifikasi',ELIGIBILITY_CHECK:'Menunggu pencarian perawat',CONFIRMED:'Mencari perawat',ASSIGNED:'Perawat ditugaskan',EN_ROUTE:'Perawat menuju lokasi',ARRIVED:'Perawat telah tiba',IN_PROGRESS:'Kunjungan berlangsung',DOCUMENTATION_PENDING:'Menunggu dokumentasi',COMPLETED:'Kunjungan selesai',ESCALATED_EMERGENCY:'Pemesanan rutin dihentikan',REJECTED_OUT_OF_AREA:'Di luar Sidrap',RESCHEDULE_REQUESTED:'Penjadwalan ulang diperlukan',CANCELLED_BY_PATIENT:'Dibatalkan'};
 const scenarios={INDEPENDENT:'Asuhan mandiri',MANDATE:'Asuhan dengan mandat',EMERGENCY:'Tanda bahaya',OUTSIDE:'Alamat di luar Sidrap',NO_CAPACITY:'Tidak ada kapasitas'};
@@ -43,27 +45,48 @@ function controls(s,r){
  return a;
 }
 
+const TOUR={
+ PAT:[{target:'status',title:'Status kunjungan',body:'Pantau perkembangan permintaan Anda di sini, dari pencarian perawat sampai kunjungan selesai.'},{target:'actions',title:'Langkah berikutnya',body:'Tombol di bagian ini hanya menampilkan tindakan yang boleh Anda lakukan pada tahap saat ini.'},{target:'tab-team',title:'Tim perawatan',body:'Lihat profil perawat setelah penugasan dikonfirmasi dan profil dokter ketika dokter terlibat.'},{target:'tab-settings',title:'Pengaturan',body:'Kelola passkey, notifikasi dan buka kembali panduan ini kapan saja.'}],
+ default:[{target:'status',title:'Status pelayanan',body:'Status terbaru dari kunjungan yang ditugaskan kepada Anda.'},{target:'actions',title:'Tindakan sesuai peran',body:'Hanya tindakan yang sesuai kewenangan peran Anda yang tersedia.'},{target:'tab-settings',title:'Pengaturan',body:'Kelola keamanan akun dan buka kembali panduan ini.'}],
+};
 export default function AccountPage(){
- const [mode,setMode]=useState('login'),[identity,setIdentity]=useState(null),[state,setState]=useState(null),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
+ const [identity,setIdentity]=useState(null),[state,setState]=useState(null),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
+ const [tab,setTab]=useState('home'),[overlay,setOverlay]=useState(null);
  const pending=useRef(false);
- async function request(payload){
-  const res=await fetch('/account-api',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(15000)});
-  return {status:res.status,body:await res.json()};
- }
  async function perform(payload,quiet=false){
   if(pending.current)return;pending.current=true;setBusy(true);if(!quiet)setMessage('');
   try{
-   let result=await request(payload);
-   if(payload.operation==='register'){setMessage(result.status===202?'Pendaftaran diterima untuk pemeriksaan akun uji.':'Pendaftaran tidak dapat diproses.');return;}
-   if(payload.operation==='logout'&&result.status===200){setIdentity(null);setState(null);return;}
-   if(payload.operation==='login'&&result.status===200)result=await request({operation:'read'});
+   const result=await call(payload);
+   if(payload.operation==='logout'&&result.status===200){setIdentity(null);setState(null);setTab('home');setOverlay(null);return;}
    if([200,409].includes(result.status)&&result.body.state&&roles[result.body.role]){setIdentity(result.body.role);setState(result.body.state);if(result.status===409)setMessage('Status berubah. Periksa langkah terbaru.');}
-   else if([401,403].includes(result.status)){setIdentity(null);setState(null);if(!quiet)setMessage('Akun belum aktif atau kredensial tidak dapat diverifikasi.');}
+   else if([401,403].includes(result.status)){setIdentity(null);setState(null);if(!quiet)setMessage('Sesi berakhir. Silakan masuk kembali.');}
    else setMessage('Layanan uji belum tersedia. Coba kembali.');
   }catch{setMessage('Koneksi terputus. Coba kembali.');}finally{pending.current=false;setBusy(false);}
  }
+ // After sign-in: offer a passkey once, then the first-run guide until completed.
+ const nextOverlay=useCallback(async(afterOtp)=>{
+  const r=await call({operation:'preferences'}).catch(()=>null);
+  if(r?.status!==200)return;
+  const p=r.body.preferences;
+  if(afterOtp&&r.body.passkeyCount===0&&!p.passkeyOfferDismissed&&browserSupportsWebAuthn())setOverlay('passkey');
+  else if(!p.onboardingCompleted)setOverlay('tour');
+  else setOverlay(null);
+ },[]);
+ async function signedIn(role,afterOtp){await perform({operation:'read'});nextOverlay(afterOtp);}
+ async function finishTour(){setOverlay(null);await call({operation:'preferences',patch:{onboardingCompleted:true}}).catch(()=>{});}
  useEffect(()=>{perform({operation:'read'},true);},[]);
  useEffect(()=>{if(!identity)return;const timer=setInterval(()=>perform({operation:'read'},true),10000);return()=>clearInterval(timer);},[identity]);
- function submit(event){event.preventDefault();const form=new FormData(event.currentTarget);const payload={operation:mode,username:form.get('username'),password:form.get('password'),role:form.get('role')};event.currentTarget.reset();perform(payload);}
- return <div className="shell"><p className="notice">Staging terbatas · Akun dan data sintetis saja</p><main><strong className="brand">MADISING</strong>{!identity?<section className="panel"><h1>{mode==='login'?'Masuk akun uji':'Daftar akun uji'}</h1><p className="muted">Gunakan identitas yang diawali uji-. Jangan masukkan identitas atau kata sandi layanan lain.</p><form className="account-form" onSubmit={submit}><label>Nama akun<input name="username" autoComplete="username" required pattern="uji-[a-z0-9][a-z0-9-]{2,39}" maxLength={44}/></label><label>Kata sandi<input name="password" type="password" autoComplete={mode==='login'?'current-password':'new-password'} required minLength={16} maxLength={128}/></label>{mode==='register'&&<label>Jenis akun<select name="role"><option value="PAT">Pasien</option><option value="CUR">Kurir</option></select></label>}<button className="primary" disabled={busy}>{mode==='login'?'Masuk':'Ajukan pendaftaran'}</button></form><button className="secondary" disabled={busy} onClick={()=>setMode(mode==='login'?'register':'login')}>{mode==='login'?'Daftar pasien atau kurir':'Kembali ke halaman masuk'}</button></section>:<><div className="heading"><h1>{roles[identity]}</h1><button className="secondary" disabled={busy} onClick={()=>perform({operation:'logout'})}>Keluar</button></div><section className="panel"><p className="muted">Kunjungan sintetis</p><h2>{statuses[state.status]}</h2><p>{scenarios[state.scenario]}</p><div className="actions">{controls(state,identity).map(([action,label])=><button className={action==='CANCEL'||action==='DECLINE'||action==='REVOKE'?'secondary':'primary'} key={action} disabled={busy} onClick={()=>perform({operation:'action',action,version:state.version})}>{label}</button>)}</div>{controls(state,identity).length===0&&<p className="muted">Tidak ada tindakan tersedia saat ini.</p>}<button className="secondary" disabled={busy} onClick={()=>perform({operation:'read'})}>Perbarui status</button></section></>}<p role="status" aria-live="polite">{busy?'Memproses…':message}</p><p className="muted">Layanan klinis, peta aktual, pembayaran dan RME tidak diaktifkan.</p></main></div>;
+ const tabs=[['home','Beranda'],...(identity==='PAT'?[['team','Tim perawatan']]:[]),['settings','Pengaturan']];
+ return <div className="shell"><p className="notice">Staging terbatas · Akun dan data sintetis saja</p><main><strong className="brand">MADISING</strong>
+  {!identity?<AuthScreen onSignedIn={signedIn}/>:<>
+   <div className="heading"><h1>{roles[identity]}</h1></div>
+   {tab==='home'&&<section className="panel" data-tour="status"><p className="muted">Kunjungan sintetis</p><h2>{statuses[state.status]}</h2><p>{scenarios[state.scenario]}</p><div className="actions" data-tour="actions">{controls(state,identity).map(([action,label])=><button className={action==='CANCEL'||action==='DECLINE'||action==='REVOKE'?'secondary':'primary'} key={action} disabled={busy} onClick={()=>perform({operation:'action',action,version:state.version})}>{label}</button>)}{controls(state,identity).length===0&&<p className="muted">Tidak ada tindakan tersedia saat ini.</p>}</div><button className="secondary" disabled={busy} onClick={()=>perform({operation:'read'})}>Perbarui status</button></section>}
+   {tab==='team'&&<CareTeam active={tab==='team'}/>}
+   {tab==='settings'&&<Settings busy={busy} onReplayTour={()=>{setTab('home');setOverlay('tour');}} onLogout={()=>perform({operation:'logout'})}/>}
+   <nav className="tabbar" aria-label="Navigasi utama">{tabs.map(([key,label])=><button key={key} data-tour={'tab-'+key} aria-current={tab===key?'page':undefined} onClick={()=>setTab(key)}>{label}</button>)}</nav>
+  </>}
+  <p role="status" aria-live="polite">{busy?'Memproses…':message}</p><p className="muted">Layanan klinis, peta aktual, pembayaran dan RME tidak diaktifkan.</p></main>
+  {identity&&overlay==='passkey'&&<PasskeyOffer onDone={()=>nextOverlay(false)}/>}
+  {identity&&overlay==='tour'&&tab==='home'&&<Tour steps={TOUR[identity]??TOUR.default} onFinish={finishTour}/>}
+ </div>;
 }

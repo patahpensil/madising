@@ -150,6 +150,9 @@ jobs:
     env:
       TRIAL_DATABASE_URL: postgresql://trial_ci:synthetic-ci-only@127.0.0.1:5432/trial_ci
       NEXT_TELEMETRY_DISABLED: '1'
+      # Synthetic CI-only pepper; real environments supply their own through protected configuration.
+      OTP_PEPPER: synthetic-ci-otp-pepper-not-a-secret-000000
+      WHATSAPP_OTP_PROVIDER: fixture
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -162,6 +165,8 @@ jobs:
           psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/001_sessions.sql
           psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/002_role_tokens.sql
           psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/003_accounts.sql
+          psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/004_access.sql
+          psql "$TRIAL_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f infra/postgres/trial/004_access.sql
       - name: Install and verify API
         run: |
           npm --prefix apps/staging-api install --no-audit --no-fund
@@ -208,3 +213,27 @@ jobs:
           node apps/staging-web/test/browser-flow.mjs
           node apps/staging-web/test/preview-flow.mjs
           node apps/staging-web/test/account-flow.mjs
+      - name: Verify WhatsApp OTP, passkeys, onboarding, settings and care team in Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          # WebAuthn rejects IP-address relying parties, so this run uses the localhost origin.
+          export MADISING_TRIAL_ENABLED=1 MADISING_FIXTURE_HARNESS=1 MADISING_ACCOUNT_TRIAL=1 WEBAUTHN_RP_ID=localhost TRIAL_WEB_ORIGIN=http://localhost:3000
+          for i in {1..20}; do ss -ltn | grep -qE ':(3000|3001) ' || break; sleep 1; done
+          node apps/staging-api/dist/main.js > /tmp/access-api.log 2>&1 &
+          api=$!
+          (cd apps/staging-web && node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3000) > /tmp/access-web.log 2>&1 &
+          web=$!
+          trap 'kill "$api" "$web" 2>/dev/null || true' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3001/readyz && curl -fsS http://localhost:3000/account > /dev/null; then break; fi
+            sleep 1
+          done
+          SCREENSHOT_DIR=/tmp/access-screens node apps/staging-web/test/access-flow.mjs
+      - name: Keep access flow screenshots for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: access-flow-screenshots
+          path: /tmp/access-screens
+          if-no-files-found: ignore

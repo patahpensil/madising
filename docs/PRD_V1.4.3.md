@@ -802,6 +802,7 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 | **V1.4.2 — kewenangan klinis** | Gate umum | §3.4–3.5, CLA-01..06, NRS-09..12, DOC-07..09, OPEN-19, UAT-34..38/43/44/47 |
 | **V1.4.2 — dispatch dan tracking** | Matching dan status dasar | §7.2.1–7.2.2, PAT-07/11, NRS-01/11, OPEN-20, UAT-39..42/46 |
 | **V1.4.2 — UI inti** | Referensi visual V1.3.7 | §14 dan prototipe V1.4.2, UAT-45; tidak mengubah SIX-DASHBOARD-LOCK |
+| **V1.4.3 — akses akun dan profil profesional** | Masuk akun uji dengan kata sandi | Addendum ACC-WA/ONB/PK/SET/PRO, OPEN-21..23, UAT-48..55; ACCOUNT-LOCK, STAFF-LOCK dan SIX-DASHBOARD-LOCK tidak berubah |
 
 ## 21.1 Pemetaan ketentuan V1.3.6 → V1.4.1
 
@@ -944,3 +945,39 @@ Admin operasional bukan penanda tangan PRD; fungsi Admin dijalankan berdasarkan 
 ## Addendum keputusan pengembangan V1.4.3
 
 [Keputusan 15 November 2026](DEVELOPMENT_DECISIONS_2026-11-15.md) berlaku atas ketentuan yang bertentangan dalam dokumen ini. Fokus Web First: Next.js dan NestJS pada origin staging terpisah dari PostgreSQL privat, Cloudflare di depan, data sintetis, pengujian browser sebelum Flutter. RME, klinis, data dan rilis tetap tunduk pada gerbang sebelumnya. Tidak ada tindakan medis, komunikasi klinis atau pembayaran nyata pada uji sintetis.
+
+## Addendum V1.4.3 — akses akun, panduan, passkey, pengaturan dan profil profesional (16 November 2026)
+
+Rincian teknis, matriks traceability dan bukti uji: [ACCOUNT_ACCESS.md](ACCOUNT_ACCESS.md). Semua fitur berjalan di staging sintetis; tidak ada aktivasi produksi, data pasien nyata, integrasi RME/SATUSEHAT atau pembayaran.
+
+| ID | Ketentuan |
+|---|---|
+| ACC-WA-01 | Nomor WhatsApp Indonesia menjadi identitas masuk pasien dan kurir. Server menormalkan ke E.164 dan menyimpan HMAC nomor serta empat digit terakhir, bukan nomor mentah. |
+| ACC-WA-02 | OTP enam digit acak kriptografis, hanya HMAC yang disimpan, berlaku 5 menit, maksimal 5 percobaan per kode, jeda kirim ulang 60 detik dan maksimal 5 pengiriman per nomor per jam. Kode sekali pakai dan diverifikasi dalam transaksi terkunci. |
+| ACC-WA-03 | Respons permintaan kode seragam untuk nomor terdaftar maupun tidak. Tanpa penyedia WhatsApp yang disetujui, layanan menolak (503); kode uji hanya terlihat pada harness tertutup. |
+| ACC-WA-04 | ACCOUNT-LOCK tetap: pendaftaran mandiri hanya pasien dan kurir. Pasien aktif setelah nomor terverifikasi; kurir menunggu pemeriksaan Admin. Akun tenaga kesehatan, apotek dan Admin dibuat Admin sesuai STAFF-LOCK. |
+| ACC-ONB-01 | Panduan interaktif (spotlight, overlay, tooltip; Lewati, Lanjut, Selesai) muncul setelah masuk pertama hingga diselesaikan atau dilewati, tersimpan di server, dan dapat dibuka ulang dari Pengaturan. |
+| ACC-PK-01 | Passkey FIDO2/WebAuthn dengan verifikasi pengguna wajib, kredensial discoverable, attestation none, challenge sekali pakai, pengecekan origin/RP ID dan penghitung tanda tangan. Hanya kunci publik yang disimpan; data biometrik tidak pernah meninggalkan perangkat. Maksimal lima passkey per akun. |
+| ACC-PK-02 | Penawaran aktivasi (Aktifkan passkey / Nanti saja) muncul setelah masuk dengan OTP; pengelolaan dan penghapusan melalui Pengaturan. |
+| ACC-SET-01 | Pengaturan memuat Pusat Bantuan, Bahasa Aplikasi, Metode Pembayaran, Alamat Tersimpan, Masuk dengan Biometrik, Pengaturan dan Keamanan Akun, Pengaturan Notifikasi, Panduan Penggunaan, Versi Aplikasi dan Keluar dari Akun. Fitur yang belum aktif menyatakan statusnya secara jujur. |
+| ACC-PRO-01 | Pasien melihat profil perawat setelah penugasan dikonfirmasi dan profil dokter ketika dokter terlibat (order dibuat). Profil memuat foto resmi, nama dan gelar, profesi, kompetensi, pengalaman, pendidikan, tempat praktik, nomor STR yang disetujui untuk dipublikasikan dan status verifikasi. |
+| ACC-PRO-02 | Rating dan ulasan hanya dari pasien pada kunjungan berstatus selesai, satu per tenaga per kunjungan, berupa nilai 1–5 dan label tetap tanpa teks bebas agar tidak memuat informasi kesehatan. Tidak ada rating atau ulasan awal. |
+| ACC-PRO-03 | Profil staging adalah data uji berlabel "belum diverifikasi", tanpa foto dan tanpa nomor STR. |
+
+| OPEN | Keputusan yang dibutuhkan | Pemegang |
+|---|---|---|
+| OPEN-21 | Penyedia WhatsApp Business (BSP), template OTP yang disetujui Meta, biaya, kanal cadangan SMS dan perlindungan penyalahgunaan di gateway. | Patah Pensil (teknis) + MADISING (kontrak) |
+| OPEN-22 | Persetujuan tenaga kesehatan atas publikasi profil, sumber foto resmi, kebijakan penampilan nomor STR dan prosedur verifikasi. | MADISING (Owner/PJ Klinis) |
+| OPEN-23 | Terjemahan antarmuka bahasa Inggris. Preferensi bahasa sudah disimpan; tampilan tetap Bahasa Indonesia. | Patah Pensil |
+
+| UAT | Skenario | Hasil yang diharapkan |
+|---|---|---|
+| UAT-48 | Daftar pasien dengan nomor WhatsApp valid dan kode benar | Akun aktif, sesi terbit, penawaran passkey tampil |
+| UAT-49 | Kode salah, kedaluwarsa, lima kali gagal, kirim ulang sebelum 60 detik, lebih dari 5 kode per jam | Ditolak dengan sisa percobaan atau waktu tunggu |
+| UAT-50 | Daftar sebagai dokter/perawat/apotek/Admin melalui OTP | Ditolak; hanya pasien dan kurir |
+| UAT-51 | Kurir mendaftar | Nomor terverifikasi, akun menunggu Admin, tidak dapat masuk |
+| UAT-52 | Aktifkan passkey, keluar, lalu masuk dengan passkey | Berhasil tanpa OTP; respons palsu atau challenge ulang ditolak |
+| UAT-53 | Panduan pertama | Tampil sekali, tidak berulang setelah selesai, dapat dibuka dari Pengaturan |
+| UAT-54 | Profil petugas sebelum penugasan, setelah penugasan, dokter tidak terlibat | Kosong, perawat tampil, dokter tidak tampil |
+| UAT-55 | Ulasan sebelum selesai, ganda, nilai di luar 1–5, label bebas | Ditolak; satu ulasan per tenaga per kunjungan selesai |
+

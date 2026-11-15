@@ -11,3 +11,6 @@ Security: scrypt N=32768,r=8,p=1, salted password hashes, two concurrent passwor
 Verification: database tests cover pending registration, cross-role forgery, simultaneous acceptance, revocation, login rotation and lockout. Browser test uses independent browser contexts, HttpOnly cookie, shared exercise, separate role actions and logout. Results to be recorded from CI. No RME/SATUSEHAT or real payment calls.
 
 The root page redirects to /account unless the fixture harness is explicitly enabled. A separate account cannot choose another exercise by supplying an ID; the server uses its bound identity. The session is checked again after the exercise row lock. Expired exercise cleanup is restricted to a stopped, disposable staging environment; do not run the legacy harness simultaneously on hosted account staging.
+
+
+Update 16 November 2026: patients and couriers now sign in with WhatsApp OTP and optional passkeys; the password form remains only for operator-provisioned test staff. Apply migration 004 and set OTP_PEPPER, WEBAUTHN_RP_ID and (isolated harness only) WHATSAPP_OTP_PROVIDER=fixture. See [ACCOUNT_ACCESS.md](ACCOUNT_ACCESS.md).
