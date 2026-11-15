@@ -9,7 +9,9 @@ Baseline kode saat ini menggunakan **Node `.mjs` tanpa framework** untuk API hea
 ## Logical modules (planned)
 
 - **Identity**: patient/courier signup and verification; Admin-provisioned clinical and pharmacy accounts; MFA for privileged users; RBAC + assignment-based ABAC on every request.
-- **Care**: service requests, triage, location verification, dispatch, visit, doctor consultation, clinical directives, patient consent, nurse documentation.
+- **Care**: service requests, triage, location verification, dispatch (offers, expiry, atomic assignment), visit, doctor consultation, clinical directives, patient consent, nursing diagnosis/plan/evaluation.
+- **Clinical Authority**: policy module dalam monolith untuk kewenangan per tindakan, consent, order/mandat, recheck saat eksekusi dan audit; delegasi nonaktif R1; tidak membuat keputusan medis.
+- **Travel**: PostGIS shortlist, provider rute/ETA, scoped realtime EN_ROUTE via WebSocket/SSE atau transport setara, fallback; Redis hanya jika kebutuhan terbukti. OPEN-20 menetapkan privasi dan retensi lokasi.
 - **Medication**: doctor-signed prescriptions, pharmacist review, pharmacy order, courier task, temperature constraints where applicable, proof of delivery.
 - **Operations**: Admin/Owner, workforce credentialing, billing, reports and immutable audit events.
 - **Vendor**: operational metrics, deployment, incident tooling and technical security without routine clinical-data access.

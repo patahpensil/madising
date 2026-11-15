@@ -1,7 +1,7 @@
 # MADISING — Implementasi awal AuthN/AuthZ (R0 → R1)
 
 Status: **implementasi baseline, belum siap pasien nyata**.
-Referensi produk: [PRD V1.4.1](PRD_V1.4.1.md) dan prototipe V1.3.7.
+Referensi produk: [PRD V1.4.2](PRD_V1.4.2.md) dan prototipe alur inti V1.4.2.
 
 ## Identity boundary / prinsip keamanan
 
@@ -64,3 +64,21 @@ Migration \`infra/postgres/migrations/001_identity_authz.sql\` menyiapkan \`acco
 4. Implementasikan provisioning staf yang hanya bisa dilakukan Admin setelah evidence/approval klinis; undangan sekali pakai tanpa password dikirim Admin.
 5. Pengujian integrasi pada PostgreSQL staging, MFA, expired token, account revocation, race/IDOR, dan audit.
 6. Uji keamanan independen, DPIA dan sign-off klinis sebelum data pasien nyata.
+
+## Izin target klinis dan dispatch V1.4.2 — belum diimplementasikan
+
+| Action target | Izin server |
+|---|---|
+| offer.read/respond | NRS eligible, penawaran sendiri, data minimum; expiry/revocation dicek |
+| assignment.accept | NRS eligible, penawaran sah, reservasi atomik; tidak menerima booking ganda |
+| location.publish | NRS sendiri, tujuan/shift/tugas sah, izin lokasi dan session aktif |
+| travel.location.read | PAT/kuasa sah, booking sendiri, assigned dan EN_ROUTE; ADM hanya minimum sesuai kebijakan |
+| nursing.diagnosis/plan/evaluation.write | NRS berwenang, encounter assigned, versi kebijakan sah |
+| clinical.medical_diagnosis/therapy.write | DOC berwenang, clinical relationship |
+| clinical.order.sign/revoke | DOC berwenang, relasi sah; order/version dan alasan diaudit |
+| clinical.mandate.sign | DOC pemberi berwenang; SOP khusus, penerima kompeten, bukti tertulis dan pengawasan |
+| clinical.procedure.start | NRS assigned; recheck CLA-01..06, consent, kompetensi, order/mandat bila diperlukan |
+| clinical.mandate.report | NRS penerima, encounter terkait; DOC pemberi review |
+| clinical.delegation.create | Tolak seluruh role pada R1 |
+
+Semua role lain ditolak kecuali izin eksplisit pada PRD. UAT-34..47 merupakan target, bukan bukti pengujian. Tidak menambah role/dashboard atau PHI untuk Admin/Vendor.

@@ -137,7 +137,7 @@ Legenda: `Y` diperbolehkan dengan scope; `L` terbatas metadata/status; `—` dil
 | Ringkasan dan tagihan | L (milik) | — | — | L (terkait) | L (terkait) | Y | — |
 | Infrastruktur/CI/CD/backup | — | — | — | — | — | L (monitoring dampak layanan/data; bukan approval teknis rutin) | Y (scope teknis dan audit) |
 
-**¹ Catatan scope CCO pada kolom ADM/OWN:** khusus **Admin ber-role `ADM` yang diberi scope `CCO` oleh Owner**, penilaian kelayakan klinis awal di `ADMIN_REVIEW` boleh membaca data triase/keluhan **minimum yang diperlukan**, dengan audit. Scope ini **bukan akses diagnosis, resep atau RME** dan **belum diimplementasikan**. Kolom ADM/OWN untuk **Asesmen & dokumentasi perawatan** dan **Diagnosis/instruksi/resep** tetap `—`; konteks `OWN` tidak otomatis memperoleh scope CCO.
+**¹ Catatan scope CCO pada kolom ADM/OWN:** khusus **Admin ber-role `ADM` yang diberi scope `CCO` oleh Owner**, penilaian kelayakan klinis awal di `ADMIN_REVIEW` boleh membaca data triase/keluhan **minimum yang diperlukan**, dengan audit. Scope ini **bukan akses diagnosis, resep atau RME** dan **belum diimplementasikan**. Kolom ADM/OWN untuk **Asesmen & dokumentasi perawatan** dan **Diagnosis medis/instruksi/resep** tetap `—`; konteks `OWN` tidak otomatis memperoleh scope CCO.
 
 Rincian izin per endpoint diterbitkan sebagai lampiran `AUTHZ_MATRIX` sebelum implementasi API klinis. Tidak ada izin wildcard untuk PHI.
 
@@ -160,7 +160,7 @@ Admin, Owner dalam konteks OWN/ADM, Vendor dan profesi lain tidak memperoleh hak
 Dasar rancangan: Permenkes 13/2025 Pasal 182–184 dan Standar Profesi Perawat (Kepmenkes HK.01.07/MENKES/425/2020). Pimpinan fasyankes menetapkan jenis pelayanan yang dapat dilimpahkan berdasarkan kebutuhan dan kompetensi. Mandat dan delegasi harus tertulis; order elektronik hanya berlaku bila bentuk pengesahan, identitas, izin dan SOP sah telah diverifikasi.
 
 - Mandat: pemberi berwenang mengawasi, keputusan tidak dialihkan, tanggung jawab pelimpahan tetap pada pemberi; penerima kompeten melaporkan hasil dan bertanggung jawab atas pelaksanaan sesuai kewajibannya. Order tidak dengan sendirinya merupakan mandat yang sah.
-- Delegasi: hanya jika kondisi berhalangan dan syarat Pasal 184 terpenuhi, kepada penerima terlatih dan kompeten, dengan tanggung jawab kewenangan yang didelegasikan beralih serta kewajiban laporan. Tidak digunakan sebagai pengganti dokter yang sesaat offline. **Tidak diaktifkan pada R1**; tidak ada tombol delegasi sebelum beleid fasyankes, legal, scope, pengawasan/pertanggungjawaban dan pengujian disahkan.
+- Delegasi: hanya jika kondisi berhalangan dan syarat Pasal 184 terpenuhi, kepada penerima terlatih dan kompeten, dengan tanggung jawab kewenangan yang didelegasikan beralih serta kewajiban laporan. Tidak digunakan sebagai pengganti dokter yang sesaat offline. **Tidak diaktifkan pada R1**; tidak ada tombol delegasi sebelum kebijakan fasyankes, legal, scope, pengawasan/pertanggungjawaban dan pengujian disahkan.
 - Jika dokter tidak tersedia dan tindakan membutuhkan mandat/order baru atau pengawasan yang tidak dapat dipenuhi, tahan tindakan dan tawarkan konsultasi, penjadwalan ulang atau rujukan yang aman. Tidak ada auto-approval.
 
 Jenis tindakan belum boleh dianggap sah hanya dari contoh di PRD. PJ Klinis bersama pimpinan fasyankes yang berwenang mengesahkan daftar tindakan, batas kompetensi, SOP, prasyarat, pengawasan, dan bentuk pengesahan sebelum aktivasi.
@@ -774,7 +774,7 @@ Jika syarat ini belum terpenuhi, penggunaan dibatasi **staging/demo dengan data 
 
 # 21. Change log dan traceability
 
-| Aspek | Baseline | PRD V1.4.1 |
+| Aspek | Baseline | Perubahan V1.4.1–V1.4.2 |
 |---|---|---|
 | Identitas produk | MADISING V1.3.4+ | Dipertahankan |
 | Enam dashboard | V1.3.6 | Dipertahankan, dengan spesifikasi akses dan acceptance tests terkonsolidasi |

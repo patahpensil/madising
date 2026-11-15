@@ -1,6 +1,6 @@
 # MADISING — Locked Product Decisions
 
-**PRD V1.4.1 adalah proposed master**. Patah Pensil menetapkan keputusan rekayasa teknis; **OPEN-12** tetap diperlukan untuk pengesahan perubahan ketentuan historis yang mengikat MADISING, aspek klinis, dan tata kelola data. Owner tidak perlu menilai file JSON, stack, CI/CD ataupun detail keamanan teknis. LOCK V1.3.6 diringkas pada §2.1 PRD V1.4.1; rincian ketentuan dan uji V1.3.6 dipetakan di §21.1 dan yang belum dipindahkan tetap berlaku melalui arsip V1.3.6; salinan historis [PRD V1.3.6](reference/MADISING_PRD_V1.3.6_Registrasi_Dashboard_Terkunci.md) diarsipkan di `docs/reference/` untuk traceability. Arsip tidak secara otomatis mengesahkan interpretasi tata kelola lama; klarifikasi V1.4.1 harus disetujui Owner melalui OPEN-12. Selama menunggu persetujuan, ketentuan LOCK V1.3.6 tetap berlaku.
+**PRD V1.4.2 adalah proposed master**. Patah Pensil menetapkan keputusan rekayasa teknis; **OPEN-12** tetap diperlukan untuk pengesahan perubahan ketentuan historis yang mengikat MADISING, aspek klinis, dan tata kelola data. Owner tidak perlu menilai file JSON, stack, CI/CD ataupun detail keamanan teknis. LOCK V1.3.6 diringkas pada §2.1 PRD V1.4.2; rincian ketentuan dan uji V1.3.6 dipetakan di §21.1 dan yang belum dipindahkan tetap berlaku melalui arsip V1.3.6; salinan historis [PRD V1.3.6](reference/MADISING_PRD_V1.3.6_Registrasi_Dashboard_Terkunci.md) diarsipkan di `docs/reference/` untuk traceability. Arsip tidak secara otomatis mengesahkan interpretasi tata kelola lama; klarifikasi V1.4.1 harus disetujui Owner melalui OPEN-12. Selama menunggu persetujuan, ketentuan LOCK V1.3.6 tetap berlaku.
 
 ## SIX-DASHBOARD-LOCK
 
@@ -39,8 +39,8 @@ Integrasi SATUSEHAT adalah prioritas **R0 feasibility dan R1 implementation**. P
 
 ## Clinical integrity
 
-Doctors own medical diagnoses and valid prescriptions. Nurses assess and execute within their legal/clinical scope. Pharmacists validate dispensing; couriers receive minimum delivery information. Existing RME is the authoritative medical record system until explicit integration design proves otherwise.
+MADISING berfokus pada pemesanan perawat untuk kunjungan rumah (nurse-led, physician-supported), bukan marketplace. Dokter menetapkan diagnosis medis, terapi dan resep. Perawat melakukan pengkajian, diagnosis keperawatan, rencana, tindakan dan evaluasi mandiri sesuai kewenangan; mandat medis hanya jika diperlukan dan sah. Delegasi tidak diaktifkan pada R1. OPEN-19/20 menutup matriks tindakan dan dispatch/tracking sebelum implementasi klinis R1 difinalkan. Pharmacists validate dispensing; couriers receive minimum delivery information. Existing RME is the authoritative medical record system until explicit integration design proves otherwise.
 
 ## Scope and financing
 
-Pilot target: AI-assisted implementation with budget ceilings under evaluation (Rp30 million build, Rp5 million/month IT). Cost ceilings never override clinical safety and mandatory production security controls. Kesesuaian cakupan R1 dengan plafon merupakan **OPEN-17**; nominal tidak dimasukkan dalam PRD.
+Pilot target: implementation with budget ceilings under evaluation (Rp30 million build, Rp5 million/month IT). Cost ceilings never override clinical safety and mandatory production security controls. Kesesuaian cakupan R1 dengan plafon merupakan **OPEN-17**; nominal tidak dimasukkan dalam PRD.
